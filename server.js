@@ -2,7 +2,7 @@ var express = require('express');
 var studentsRouter = require('./routes/api/students');
 var mongoose = require('mongoose');
 
-var connectionString = require('./config/connectionString').mongoURI;
+// var connectionString = require('./config/connectionString').mongoURI;
 
 // Set up the express app
 const app = express();
