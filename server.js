@@ -3,14 +3,18 @@ var studentsRouter = require('./routes/api/students');
 var mongoose = require('mongoose');
 
 // var connectionString = require('./config/connectionString').mongoURI;
+var connectionString = "";
 
 // Set up the express app
 const app = express();
 
 // connect to MongoDB
-mongoose.connect(connectionString, { useNewUrlParser: true })
+if (connectionString) {
+  mongoose.connect(connectionString, { useNewUrlParser: true })
     .then(() => { console.log('Connected to database succesfully'); })
     .catch( err => { console.log(err); });
+}
+
 
 app.use('/api/students', studentsRouter);
 
