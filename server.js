@@ -9,7 +9,7 @@ var connectionString = "";
 const app = express();
 
 // connect to MongoDB
-if (connectionString) {
+if (connectionString.length > 0) {
   mongoose.connect(connectionString, { useNewUrlParser: true })
     .then(() => { console.log('Connected to database succesfully'); })
     .catch( err => { console.log(err); });
