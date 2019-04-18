@@ -12,6 +12,17 @@ router.get('/', (req, res) => {
         .then(students => res.json(students))
 });
 
+// @route   GET api/students/words
+// @desc    Get all words that student have learned
+// @access  Public
+router.get('/words', (req, res) => {
+    StudentModel.find({messengerId: req.query.messengerId})
+    .then(matches => {
+        const words = getWordsArrayForStudent(matches);
+        res.json(words);
+    });
+});
+
 // @route   POST api/students
 // @desc    Add student data
 // @access  Public
@@ -21,7 +32,7 @@ router.post('/', (req, res) => {
         messengerId: req.query.messengerId || null,
         englishLevel: req.query.englishLevel || null,
         lessonRating: req.query.lessonRating || 0,
-        newWords: getWordsArray(req.query.newWords),
+        newWords: getWordsArrayFromString(req.query.newWords),
         groupName: req.query.groupName || '',
         learnedToday: getLearnedToday(req.query.learnedToday, req.query.learnedTodayExtended)
     })
@@ -37,8 +48,17 @@ const getLearnedToday = (learnedToday, extension) => {
     return learnedToday + (extension ? (". " + extension) : "")
 }
 
-const getWordsArray = (wordsString) => {
+const getWordsArrayFromString = (wordsString) => {
     return wordsString.split(/[\s,]+/);
+}
+
+const getWordsArrayForStudent = (matchingDocuments) => {
+    const words = [];
+    matchingDocuments.forEach(document => {
+        words.push.apply(words, document.newWords)
+    });
+
+    return words;
 }
 
 module.exports = router;
