@@ -18,17 +18,15 @@ router.get('/', (req, res) => {
 router.post('/', (req, res) => {
 
     const newStudentData = new StudentModel({
-        messengerUserId: req.query.messengerId || null,
+        messengerId: req.query.messengerId || null,
         englishLevel: req.query.englishLevel || null,
         lessonRating: req.query.lessonRating || 0,
-        newWords: req.query.newWords || '',
+        newWords: getWordsArray(req.query.newWords),
         groupName: req.query.groupName || '',
         learnedToday: getLearnedToday(req.query.learnedToday, req.query.learnedTodayExtended)
     })
 
-    console.log(newStudentData);
-
-    // res.json(newStudentData)
+    // res.json(newStudentData);
 
     StudentModel.create(newStudentData)
         .then(savedStudentData => res.json(savedStudentData))
@@ -36,14 +34,11 @@ router.post('/', (req, res) => {
 });
 
 const getLearnedToday = (learnedToday, extension) => {
-    let learnTodayResult = '';
-    if (learnedToday) {
-        learnTodayResult += learnedToday;
-    }
-    if (extension) {
-        learnTodayResult += extension;
-    }
-    return learnTodayResult;
+    return learnedToday + (extension ? (". " + extension) : "")
+}
+
+const getWordsArray = (wordsString) => {
+    return wordsString.split(/[\s,]+/);
 }
 
 module.exports = router;

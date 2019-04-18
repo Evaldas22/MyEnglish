@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const StudentSchema = new mongoose.Schema({
-    messengerUserId: {
+    messengerId: {
         type: String,
         required: true
     },
@@ -14,7 +14,7 @@ const StudentSchema = new mongoose.Schema({
         required: true
     },
     newWords: {
-        type: String,
+        type: Array,
         required: true
     },
     groupName: {
