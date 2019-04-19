@@ -23,6 +23,19 @@ router.get('/words', (req, res) => {
     });
 });
 
+// @route   GET api/students/revision
+// @desc    Get specified number of random words for revision for one student
+// @access  Public
+router.get('/revision', (req, res) => {
+    const NUMBER_OF_WORDS = 5;
+    StudentModel.find({messengerId: req.query.messengerId})
+    .then(matches => {
+        const allWords = getWordsArrayForStudent(matches);
+        const wordsForRevision = getRandomWordsForRevision(allWords, NUMBER_OF_WORDS);
+        res.json(wordsForRevision);
+    });
+});
+
 // @route   POST api/students
 // @desc    Add student data
 // @access  Public
@@ -59,6 +72,26 @@ const getWordsArrayForStudent = (matchingDocuments) => {
     });
 
     return words;
+}
+
+function getRandomWordsForRevision(wordsArr, n) {
+    const result = [];
+    const len = wordsArr.length;
+    const takenWords = [];
+    
+    while(n > 0){
+      const rand = Math.floor(Math.random() * len);
+      const wordToBeTaken = wordsArr[rand];
+      if(takenWords.includes(wordToBeTaken)){
+      	continue;
+      } else {
+      	result.push(wordToBeTaken);
+        takenWords.push(wordToBeTaken);
+      }
+      n--;
+    }
+		
+    return result;
 }
 
 module.exports = router;
