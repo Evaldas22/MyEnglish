@@ -2,8 +2,9 @@ var express = require('express');
 var studentsRouter = require('./routes/api/students');
 var mongoose = require('mongoose');
 
-// var localConnectionString = require('./config/connectionString').mongoURI;
-var connectionString = process.env.connectionString || "";
+var localConnectionString = require('./config/connectionString').mongoURI;
+localConnectionString = "";
+var connectionString = process.env.connectionString || localConnectionString;
 
 // Set up the express app
 const app = express();
