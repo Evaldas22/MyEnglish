@@ -40,21 +40,32 @@ router.get('/revision', (req, res) => {
 // @desc    Add student data
 // @access  Public
 router.post('/', (req, res) => {
+    let newWords = getWordsArrayFromString(req.query.newWords);
+    // remove duplicates
+    newWords = [...new Set(newWords)];
 
-    const newStudentData = new StudentModel({
-        messengerId: req.query.messengerId || null,
-        englishLevel: req.query.englishLevel || null,
-        lessonRating: req.query.lessonRating || 0,
-        newWords: getWordsArrayFromString(req.query.newWords),
-        groupName: req.query.groupName || '',
-        learnedToday: getLearnedToday(req.query.learnedToday, req.query.learnedTodayExtended)
-    })
+    // make sure not to add words that are already saved in DB
+    StudentModel.find({messengerId: req.query.messengerId})
+    .then(matches => {
+        const allWords = getWordsArrayForStudent(matches);
 
-    // res.json(newStudentData);
-
-    StudentModel.create(newStudentData)
-        .then(savedStudentData => res.json(savedStudentData))
-        .catch(err => res.status(500).json(err));
+        const filteredWords = newWords.filter(newWord => (!allWords.includes(newWord)));
+        
+        const newStudentData = new StudentModel({
+            messengerId: req.query.messengerId || null,
+            englishLevel: req.query.englishLevel || null,
+            lessonRating: req.query.lessonRating || 0,
+            newWords: filteredWords,
+            groupName: req.query.groupName || '',
+            learnedToday: getLearnedToday(req.query.learnedToday, req.query.learnedTodayExtended)
+        })
+    
+        // res.json(newStudentData);
+    
+        StudentModel.create(newStudentData)
+            .then(savedStudentData => res.json(savedStudentData))
+            .catch(err => res.status(500).json(err));
+    });
 });
 
 const getLearnedToday = (learnedToday, extension) => {
