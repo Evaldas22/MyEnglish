@@ -2,23 +2,23 @@ My english is a RESTful API which integrates with MyEnglish chatbot. It's main p
 
 ## Available endpoints
 
-##### GET /api/students
-To get all stored data
+##### GET /api/groups
+To get all data about groups
 - - - -
-##### GET /api/students/words/{messengerId}
-To get all learned words for one student
+##### GET /api/group/{groupName}
+To get all data about specified group
 - - - -
-##### GET /api/students/revision/{messengerId}
-To get a predifined number of random words from all learned words list
-- - - -
-##### POST /api/students/...
+##### POST /api/student/...
 To save data into database
 
 Required query paramaters:
 * {messengerId}
 * {englishLevel}
 * {lessonRating}
+* {lessonRatingExplanation}
 * {newWords}
 * {groupName}
 * {learnedToday}
 * {learnedTodayExtended}
+* {firstName}
+* {lastName}
