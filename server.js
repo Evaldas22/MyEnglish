@@ -16,7 +16,7 @@ if (connectionString) {
     .catch( err => { console.log(err); });
 }
 
-app.use('/api/students', studentsRouter);
+app.use('/api', studentsRouter);
 
 const server_port = process.env.OPENSHIFT_NODEJS_PORT || 8080;
 const server_ip_address = process.env.OPENSHIFT_NODEJS_IP || '0.0.0.0';

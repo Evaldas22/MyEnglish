@@ -1,7 +1,13 @@
 const mongoose = require('mongoose');
+const WordSchema = require('./Word').WordSchema;
+const DayUpdateSchema = require('./DayUpdate').DayUpdateSchema;
 
 const StudentSchema = new mongoose.Schema({
     messengerId: {
+        type: String,
+        required: true
+    },
+    name: {
         type: String,
         required: true
     },
@@ -9,28 +15,15 @@ const StudentSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    lessonRating: {
-        type: Number,
-        required: true
-    },
-    newWords: {
-        type: Array,
-        required: true
-    },
     groupName: {
         type: String,
         required: true
     },
-    learnedToday: {
-        type: String,
-        required: true
-    },
-    date: {
-        type: Date,
-        default: Date.now
-    }
+    knownWords: [WordSchema],
+    dayUpdates: [DayUpdateSchema]
 });
 
-var StudentModule = mongoose.model('students', StudentSchema);
+const StudentModel = mongoose.model("students", StudentSchema);
 
-module.exports = StudentModule;
+exports.StudentSchema = StudentSchema;
+exports.StudentModel = StudentModel;
