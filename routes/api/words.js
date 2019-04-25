@@ -27,10 +27,10 @@ router.get('/word', (req, res) => {
 		})
 });
 
-// @route   GET api/word/update/{messengerId}{groupName}{word}{knowIt}
+// @route   POST api/word/update/{messengerId}{groupName}{word}{knowIt}
 // @desc    Update word score
 // @access  Public
-router.get('/word/update', (req, res) => {
+router.post('/word/update', (req, res) => {
 	GroupModel.find()
 		.then(groups => {
 			const group = getGroup(groups, req.query.groupName);
