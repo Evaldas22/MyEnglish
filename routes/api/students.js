@@ -199,24 +199,5 @@ const getWordsArrayForStudent = (matchingDocuments) => {
     return words;
 }
 
-function getRandomWordsForRevision(wordsArr, n) {
-    const result = [];
-    const len = wordsArr.length;
-    const takenWords = [];
-    
-    while(n > 0){
-      const rand = Math.floor(Math.random() * len);
-      const wordToBeTaken = wordsArr[rand];
-      if(takenWords.includes(wordToBeTaken)){
-      	continue;
-      } else {
-      	result.push(wordToBeTaken);
-        takenWords.push(wordToBeTaken);
-      }
-      n--;
-    }
-		
-    return result;
-}
-
-module.exports = router;
+exports.router = router;
+exports.getStudent = getStudent;
