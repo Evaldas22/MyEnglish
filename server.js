@@ -5,7 +5,7 @@ var wordsRouter = require('./routes/api/words');
 var mongoose = require('mongoose');
 
 var localConnectionString = "";
-localConnectionString = require('./config/connectionString').mongoURI;
+// localConnectionString = require('./config/connectionString').mongoURI;
 var connectionString = process.env.connectionString || localConnectionString;
 
 // Set up the express app
