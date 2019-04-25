@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const getStudent = require('./students').getStudent;
+const getGroup = require('./students').getGroup;
 var _ = require('lodash');
 
 var GroupModel = require('../../models/Group');
@@ -9,63 +10,89 @@ var GroupModel = require('../../models/Group');
 // @desc    Get one word for revision
 // @access  Public
 router.get('/word', (req, res) => {
-    GroupModel.find()
-        .then(groups => {
-            const student = getStudent(groups, req.query.messengerId);
-            
-            if (!student) {
-                res.status(500).json('Student not found');
-            }
+	GroupModel.find()
+		.then(groups => {
+			const student = getStudent(groups, req.query.messengerId);
 
-            const wordForRevision = getWordForRevision(student.knownWords);
-            if (_.isNull(wordForRevision)) {
-                res.status(404).json('This student probably has no words');
-            }
-            res.json(wordForRevision);
-        })
+			if (!student) {
+				res.status(500).json('Student not found');
+			}
+			else if (student.knownWords.length <= 0) {
+				res.status(404).json("Student doesn't know any words");
+			}
+
+			const wordForRevision = getWordForRevision(student.knownWords);
+
+			res.json(wordForRevision);
+		})
+});
+
+// @route   GET api/word/update/{messengerId}{groupName}{word}{knowIt}
+// @desc    Update word score
+// @access  Public
+router.get('/word/update', (req, res) => {
+	GroupModel.find()
+		.then(groups => {
+			const group = getGroup(groups, req.query.groupName);
+			const student = getStudent(groups, req.query.messengerId);
+
+			if (!student) {
+				res.status(500).json('Student not found');
+			}
+			else if (student.knownWords.length <= 0) {
+				res.status(404).json("Student doesn't know any words");
+			}
+
+			student.knownWords.forEach(knownWord => {
+				if (knownWord.word === req.query.word) {
+					knownWord.score += (req.query.knowIt === "true") ? 1 : -1;
+				}
+			}); 
+
+			group.save(err => {
+				if (err) return res.status(500).json(err);
+				res.json(student);
+			});
+		})
 });
 
 // This function should take a word with lowest score or if there are multiple such words
 // with lowest score, then pick random word from those with lowest score
 const getWordForRevision = words => {
-    let smallestScoreWord = {};
+	let smallestScoreWordObj = {};
 
-    // get the smallest score word
-    words.forEach(word => {
-        if (_.isEmpty(smallestScoreWord) || (words.score < smallestScoreWord.score)) {
-            smallestScoreWord = word;
-        }
-    });
-    
-    if (_.isEmpty(smallestScoreWord)) {
-        return null;
-    }
+	// get the smallest score word
+	words.forEach(word => {
+		if (_.isEmpty(smallestScoreWordObj) || (words.score < smallestScoreWordObj.score)) {
+			smallestScoreWordObj = word;
+		}
+	});
 
-    // after we got smallest score word, we need to check if we have more words with this score
-    const smallestScoreAllWords = getAllWordsWithSmallestScore(words, smallestScoreWord.score);
+	// after we got smallest score word, we need to check if we have more words with this score
+	const wordsWithSmallestScore = getAllWordsWithSmallestScore(words, smallestScoreWordObj.score);
 
-    if (smallestScoreAllWords.length > 1) {
-        return  getRandomWord(smallestScoreAllWords)  ; 
-    }
-    else {
-        smallestScoreWord.word;
-    }
+	if (wordsWithSmallestScore.length > 1) {
+		return getRandomWord(wordsWithSmallestScore);
+	}
+	else {
+		smallestScoreWordObj.word;
+	}
 }
 
 const getAllWordsWithSmallestScore = (words, score) => {
-    let wordsWithSameScore = [];
-    words.forEach(word => {
-        if (word.score === score) {
-            wordsWithSameScore.push(word.word);
-        }
-    });
+	let wordsWithSameScore = [];
+	words.forEach(word => {
+		if (word.score === score) {
+			wordsWithSameScore.push(word.word);
+		}
+	});
 
-    return wordsWithSameScore;
+	return wordsWithSameScore;
 }
 
 function getRandomWord(words) {
-    const randomNum = Math.floor(Math.random() * words.length);
-    return words[randomNum];
+	const randomNum = Math.floor(Math.random() * words.length);
+	return words[randomNum];
 }
 
 module.exports = router;

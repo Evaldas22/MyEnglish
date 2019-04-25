@@ -7,16 +7,16 @@ var GroupModel = require('../../models/Group');
 // @desc    Get all groups
 // @access  Public
 router.get('/groups', (req, res) => {
-    GroupModel.find()
-        .then(group => res.json(group))
+	GroupModel.find()
+		.then(group => res.json(group))
 });
 
 // @route   GET api/group/{groupName}
 // @desc    Get all students for certain group
 // @access  Public
 router.get('/group', (req, res) => {
-    GroupModel.find({ name: req.query.groupName })
-        .then(group => res.json(group))
+	GroupModel.find({ name: req.query.groupName })
+		.then(group => res.json(group))
 });
 
 module.exports = router;
