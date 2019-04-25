@@ -13,7 +13,7 @@ router.get('/word', (req, res) => {
 	GroupModel.find()
 		.then(groups => {
 			const student = getStudent(groups, req.query.messengerId);
-
+		
 			if (!student) {
 				res.status(500).json('Student not found');
 			}
@@ -22,8 +22,10 @@ router.get('/word', (req, res) => {
 			}
 
 			const wordForRevision = getWordForRevision(student.knownWords);
+			
+			const response = constructResponse(wordForRevision);
 
-			res.json(wordForRevision);
+			res.json(response);
 		})
 });
 
@@ -75,7 +77,7 @@ const getWordForRevision = words => {
 		return getRandomWord(wordsWithSmallestScore);
 	}
 	else {
-		smallestScoreWordObj.word;
+		return wordsWithSmallestScore[0];
 	}
 }
 
@@ -93,6 +95,34 @@ const getAllWordsWithSmallestScore = (words, score) => {
 function getRandomWord(words) {
 	const randomNum = Math.floor(Math.random() * words.length);
 	return words[randomNum];
+}
+
+const constructResponse = word => {
+	return {
+		"messages": [
+			{
+				"attachment": {
+					"type": "template",
+					"payload": {
+						"template_type": "button",
+						"text": "Do you know this word - " + word + "?",
+						"buttons": [
+							{
+								"type": "show_block",
+								"block_names": ["KnowTheWord"],
+								"title": "Yes"
+							},
+							{
+								"type": "show_block",
+								"block_names": ["Don'tKnowTheWord"],
+								"title": "No"
+							}
+						]
+					}
+				}
+			}
+		]
+	}
 }
 
 module.exports = router;
