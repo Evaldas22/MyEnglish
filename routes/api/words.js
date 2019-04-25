@@ -99,29 +99,10 @@ function getRandomWord(words) {
 
 const constructResponse = word => {
 	return {
-		"messages": [
+		"set_attributes":
 			{
-				"attachment": {
-					"type": "template",
-					"payload": {
-						"template_type": "button",
-						"text": "Do you know this word - " + word + "?",
-						"buttons": [
-							{
-								"type": "show_block",
-								"block_names": ["KnowTheWord"],
-								"title": "Yes"
-							},
-							{
-								"type": "show_block",
-								"block_names": ["Don'tKnowTheWord"],
-								"title": "No"
-							}
-						]
-					}
-				}
+				"revisionWord": word
 			}
-		]
 	}
 }
 
