@@ -69,7 +69,6 @@ const getWordForRevision = words => {
 			smallestScoreWordObj = word;
 		}
 	});
-	console.log(smallestScoreWordObj);
 	// after we got smallest score word, we need to check if we have more words with this score
 	const wordsWithSmallestScore = getAllWordsWithSmallestScore(words, smallestScoreWordObj.score);
 
