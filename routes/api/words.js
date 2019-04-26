@@ -3,6 +3,9 @@ const router = express.Router();
 const getStudent = require('./students').getStudent;
 const getGroup = require('./students').getGroup;
 var _ = require('lodash');
+var unirest = require('unirest');
+var apiKey = process.env.apiKey;
+
 
 var GroupModel = require('../../models/Group');
 
@@ -58,6 +61,30 @@ router.post('/word/update', (req, res) => {
 		})
 });
 
+// @route   GET api/word/definition/{word}
+// @desc    Get a definition of a word
+// @access  Public
+router.get('/word/definition', (req, res) => {
+	unirest.get(`https://wordsapiv1.p.rapidapi.com/words/${req.query.word}/definitions`)
+		.header("X-RapidAPI-Host", "wordsapiv1.p.rapidapi.com")
+		.header("X-RapidAPI-Key", apiKey)
+		.end(function (result) {
+			res.json(constructDefinitionResponse(result.body));
+		});
+});
+
+// @route   GET api/word/example/{word}
+// @desc    Get example/-s of word
+// @access  Public
+router.get('/word/example', (req, res) => {
+	unirest.get(`https://wordsapiv1.p.rapidapi.com/words/${req.query.word}/examples`)
+		.header("X-RapidAPI-Host", "wordsapiv1.p.rapidapi.com")
+		.header("X-RapidAPI-Key", apiKey)
+		.end(function (result) {
+			res.json(constructExampleResponse(result.body));
+		});
+});
+
 // This function should take a word with lowest score or if there are multiple such words
 // with lowest score, then pick random word from those with lowest score
 const getWordForRevision = words => {
@@ -102,6 +129,44 @@ const constructResponse = word => {
 			{
 				"revisionWord": word
 			}
+	}
+}
+
+const constructDefinitionResponse = definitionsObj => {
+	if (_.isEmpty(definitionsObj.definitions)) {
+		return {
+			"messages": [
+				{"text": "We couldn't find any definition for this word :/"}
+			]
+		};
+	}
+	else {
+		const randomNum = Math.floor(Math.random() * definitionsObj.definitions.length);
+		const definitionObj = definitionsObj.definitions[randomNum];
+		return {
+			"messages": [
+				{"text": `${definitionsObj.word} (${definitionObj.partOfSpeech}) - ${definitionObj.definition}`}
+			]
+		};
+	}
+}
+
+const constructExampleResponse = exampleObj => {
+	if (_.isEmpty(exampleObj.examples)) {
+		return {
+			"messages": [
+				{"text": "We couldn't find any examples for this word :/"}
+			]
+		};
+	}
+	else {
+		const randomNum = Math.floor(Math.random() * exampleObj.examples.length);
+		const example = exampleObj.examples[randomNum];
+		return {
+			"messages": [
+				{"text": example}
+			]
+		};
 	}
 }
 
