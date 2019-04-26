@@ -65,7 +65,6 @@ router.post('/word/update', (req, res) => {
 // @desc    Get a definition of a word
 // @access  Public
 router.get('/word/definition', (req, res) => {
-	console.log(apiKey);
 	unirest.get(`https://wordsapiv1.p.rapidapi.com/words/${req.query.word}/definitions`)
 		.header("X-RapidAPI-Host", "wordsapiv1.p.rapidapi.com")
 		.header("X-RapidAPI-Key", apiKey)
