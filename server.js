@@ -5,6 +5,7 @@ var wordsRouter = require('./routes/api/words');
 var mongoose = require('mongoose');
 const url = require('url');
 const axios = require('axios');
+const bodyParser = require('body-parser');
 
 let sapaiToken = "";
 // sapaiToken = require('./config/sapAiToken').sapaiToken;
@@ -24,6 +25,7 @@ if (connectionString) {
     .catch(err => { console.log(err); });
 }
 
+app.use(bodyParser.json());
 app.use('/api', studentsRouter);
 app.use('/api', groupsRouter);
 app.use('/api', wordsRouter);
