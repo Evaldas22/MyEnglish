@@ -22,30 +22,6 @@ router.get('/group', (req, res) => {
 		.then(group => res.json(group))
 });
 
-// // @route   GET api/students/words
-// // @desc    Get all words that student have learned
-// // @access  Public
-// router.get('/words', (req, res) => {
-//     StudentModel.find({messengerId: req.query.messengerId})
-//     .then(matches => {
-//         const words = getWordsArrayForStudent(matches);
-//         res.json(words);
-//     });
-// });
-
-// // @route   GET api/students/revision
-// // @desc    Get specified number of random words for revision for one student
-// // @access  Public
-// router.get('/revision', (req, res) => {
-//     const NUMBER_OF_WORDS = 5;
-//     StudentModel.find({messengerId: req.query.messengerId})
-//     .then(matches => {
-//         const allWords = getWordsArrayForStudent(matches);
-//         const wordsForRevision = getRandomWordsForRevision(allWords, NUMBER_OF_WORDS);
-//         res.json(wordsForRevision);
-//     });
-// });
-
 // @route   POST api/student
 // @desc    Add student day update
 // @access  Public
