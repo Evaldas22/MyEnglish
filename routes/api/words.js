@@ -42,13 +42,19 @@ router.get('/word', (req, res) => {
 // @desc    Update word score
 // @access  Public
 router.post('/word/update', (req, res) => {
+	const query = url.parse(req.url, true).query;
+	const messengerId = query['messenger user id'];
+	const groupName = query['groupName'];
+	const word = query['revisionWord'];
+	const knowIt = query['knowIt'];
+
 	GroupModel.find()
 		.then(groups => {
-			const group = getGroup(groups, req.query.groupName);
+			const group = getGroup(groups, groupName);
 			if (_.isUndefined(group)) {
 				res.status(404).json('Group not found');
 			}
-			const student = getStudent(groups, req.query.messengerId);
+			const student = getStudent(groups, messengerId);
 
 			if (_.isUndefined(student)) {
 				res.status(500).json('Student not found');
@@ -58,8 +64,8 @@ router.post('/word/update', (req, res) => {
 			}
 
 			student.knownWords.forEach(knownWord => {
-				if (knownWord.word === req.query.word) {
-					knownWord.score += (req.query.knowIt === "true") ? 1 : 0;
+				if (knownWord.word === word) {
+					knownWord.score += (knowIt === "true") ? 1 : 0;
 				}
 			}); 
 
@@ -74,19 +80,24 @@ router.post('/word/update', (req, res) => {
 // @desc    Add new words for the student
 // @access  Public
 router.post('/word/newWords', (req, res) => {
+	const query = url.parse(req.url, true).query;
+	const messengerId = query['messenger user id'];
+	const groupName = query['groupName'];
+	const newWords = query['newWords'];
+
 	GroupModel.find()
 		.then(groups => {
-			const group = getGroup(groups, req.query.groupName);
+			const group = getGroup(groups, groupName);
 			if (_.isUndefined(group)) {
 				res.status(404).json('Group not found');
 			}
-			const student = getStudent(groups, req.query.messengerId);
+			const student = getStudent(groups, messengerId);
 
 			if (_.isUndefined(student)) {
 				res.status(404).json('Student not found');
 			} 
 
-			const newWordsToBeAdded = getNewWords(student.knownWords, getWordsArrayFromString(req.query.newWords));
+			const newWordsToBeAdded = getNewWords(student.knownWords, getWordsArrayFromString(newWords));
 			student.knownWords.push.apply(student.knownWords, newWordsToBeAdded);
 
 			group.save(err => {
@@ -100,7 +111,10 @@ router.post('/word/newWords', (req, res) => {
 // @desc    Get a definition of a word
 // @access  Public
 router.get('/word/definition', (req, res) => {
-	unirest.get(`https://wordsapiv1.p.rapidapi.com/words/${req.query.word}/definitions`)
+	const query = url.parse(req.url, true).query;
+	const word = query['revisionWord'];
+
+	unirest.get(`https://wordsapiv1.p.rapidapi.com/words/${word}/definitions`)
 		.header("X-RapidAPI-Host", "wordsapiv1.p.rapidapi.com")
 		.header("X-RapidAPI-Key", apiKey)
 		.end(function (result) {
@@ -112,7 +126,10 @@ router.get('/word/definition', (req, res) => {
 // @desc    Get example/-s of word
 // @access  Public
 router.get('/word/example', (req, res) => {
-	unirest.get(`https://wordsapiv1.p.rapidapi.com/words/${req.query.word}/examples`)
+	const query = url.parse(req.url, true).query;
+	const word = query['revisionWord'];
+
+	unirest.get(`https://wordsapiv1.p.rapidapi.com/words/${word}/examples`)
 		.header("X-RapidAPI-Host", "wordsapiv1.p.rapidapi.com")
 		.header("X-RapidAPI-Key", apiKey)
 		.end(function (result) {
