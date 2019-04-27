@@ -47,6 +47,7 @@ router.post('/word/update', (req, res) => {
 	const groupName = query['groupName'];
 	const word = query['revisionWord'];
 	const knowIt = query['knowIt'];
+	console.log(`${messengerId} ${groupName} ${word} ${knowIt}`);
 
 	GroupModel.find()
 		.then(groups => {
