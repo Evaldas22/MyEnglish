@@ -50,7 +50,7 @@ router.post('/word/update', (req, res) => {
 
 			student.knownWords.forEach(knownWord => {
 				if (knownWord.word === req.query.word) {
-					knownWord.score += (req.query.knowIt === "true") ? 1 : -1;
+					knownWord.score += (req.query.knowIt === "true") ? 1 : 0;
 				}
 			}); 
 
