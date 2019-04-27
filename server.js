@@ -31,28 +31,28 @@ app.use('/api', wordsRouter);
 // this will act as proxy, which will send request to SAP Conversational AI
 // and send back chatfuel formatted message back.
 app.get('/', (req, res) => {
-	const query = url.parse(req.url, true).query;
-    const userId = query['chatfuel user id'];
-    const userMessage = query['user_message'];
+  const query = url.parse(req.url, true).query;
+  const userId = query['chatfuel user id'];
+  const userMessage = query['user_message'];
 
-    // Call SAP Conversational AI API with the user message
-    return axios
-      .post('https://api.cai.tools.sap/build/v1/dialog',
-        {
-          message: { content: userMessage, type: 'text' },
-          conversation_id: userId,
-        },
-        { headers: { Authorization: `Token ${SAPCAI_REQUEST_TOKEN}` } }
-      )
-      .then(body => {
-        // Format messages to Chatfuel format
-        const formattedMessages = body.data.results.messages.map(chatfuelFormat);
-      
-        // Sends the answer back to Chatfuel 
-        res.json({
-          messages: formattedMessages,
-        });
+  // Call SAP Conversational AI API with the user message
+  return axios
+    .post('https://api.cai.tools.sap/build/v1/dialog',
+      {
+        message: { content: userMessage, type: 'text' },
+        conversation_id: userId,
+      },
+      { headers: { Authorization: `Token ${SAPCAI_REQUEST_TOKEN}` } }
+    )
+    .then(body => {
+      // Format messages to Chatfuel format
+      const formattedMessages = body.data.results.messages.map(chatfuelFormat);
+
+      // Sends the answer back to Chatfuel 
+      res.json({
+        messages: formattedMessages,
       });
+    });
 });
 
 const server_port = process.env.OPENSHIFT_NODEJS_PORT || 8080;
