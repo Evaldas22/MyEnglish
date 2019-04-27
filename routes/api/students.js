@@ -158,3 +158,5 @@ const getWordsArrayFromString = (wordsString) => {
 exports.router = router;
 exports.getStudent = getStudent;
 exports.getGroup = getGroup;
+exports.getNewWords = getNewWords;
+exports.getWordsArrayFromString = getWordsArrayFromString;

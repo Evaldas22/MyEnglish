@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const getStudent = require('./students').getStudent;
 const getGroup = require('./students').getGroup;
+const getNewWords = require('./students').getNewWords;
+const getWordsArrayFromString = require('./students').getWordsArrayFromString;
 var _ = require('lodash');
 var unirest = require('unirest');
 var apiKey = process.env.apiKey;
@@ -39,9 +41,12 @@ router.post('/word/update', (req, res) => {
 	GroupModel.find()
 		.then(groups => {
 			const group = getGroup(groups, req.query.groupName);
+			if (_.isUndefined(group)) {
+				res.status(404).json('Group not found');
+			}
 			const student = getStudent(groups, req.query.messengerId);
 
-			if (!student) {
+			if (_.isUndefined(student)) {
 				res.status(500).json('Student not found');
 			}
 			else if (student.knownWords.length <= 0) {
@@ -53,6 +58,32 @@ router.post('/word/update', (req, res) => {
 					knownWord.score += (req.query.knowIt === "true") ? 1 : 0;
 				}
 			}); 
+
+			group.save(err => {
+				if (err) return res.status(500).json(err);
+				res.json(student);
+			});
+		})
+});
+
+// @route   POST api/word/newWords/{messengerId}{groupName}{newWords}
+// @desc    Add new words for the student
+// @access  Public
+router.post('/word/newWords', (req, res) => {
+	GroupModel.find()
+		.then(groups => {
+			const group = getGroup(groups, req.query.groupName);
+			if (_.isUndefined(group)) {
+				res.status(404).json('Group not found');
+			}
+			const student = getStudent(groups, req.query.messengerId);
+
+			if (_.isUndefined(student)) {
+				res.status(404).json('Student not found');
+			} 
+
+			const newWordsToBeAdded = getNewWords(student.knownWords, getWordsArrayFromString(req.query.newWords));
+			student.knownWords.push.apply(student.knownWords, newWordsToBeAdded);
 
 			group.save(err => {
 				if (err) return res.status(500).json(err);
