@@ -7,6 +7,7 @@ const getWordsArrayFromString = require('./students').getWordsArrayFromString;
 var _ = require('lodash');
 var unirest = require('unirest');
 var apiKey = process.env.apiKey;
+const url = require('url');
 
 
 var GroupModel = require('../../models/Group');
