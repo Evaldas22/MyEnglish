@@ -15,9 +15,12 @@ var GroupModel = require('../../models/Group');
 // @desc    Get one word for revision
 // @access  Public
 router.get('/word', (req, res) => {
+	const query = url.parse(req.url, true).query;
+	const messengerId = query['messenger user id'];
+	
 	GroupModel.find()
 		.then(groups => {
-			const student = getStudent(groups, req.query.messengerId);
+			const student = getStudent(groups, messengerId);
 		
 			if (!student) {
 				res.status(500).json('Student not found');
