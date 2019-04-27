@@ -35,9 +35,6 @@ app.get('/', (req, res) => {
     const userId = query['chatfuel user id'];
     const userMessage = query['user_message'];
 
-    // Remove once not needed
-    console.log(userId + " " + userMessage);
-
     // Call SAP Conversational AI API with the user message
     return axios
       .post('https://api.cai.tools.sap/build/v1/dialog',
