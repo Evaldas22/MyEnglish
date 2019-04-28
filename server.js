@@ -5,7 +5,7 @@ var wordsRouter = require('./routes/api/words');
 var mongoose = require('mongoose');
 const url = require('url');
 const axios = require('axios');
-const bodyParser = require('body-parser');
+var bodyParser = require('body-parser');
 
 let sapaiToken = "";
 // sapaiToken = require('./config/sapAiToken').sapaiToken;
@@ -25,11 +25,11 @@ if (connectionString) {
     .catch(err => { console.log(err); });
 }
 
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/api', studentsRouter);
 app.use('/api', groupsRouter);
 app.use('/api', wordsRouter);
-app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser.json())
 
 // this will act as proxy, which will send request to SAP Conversational AI
 // and send back chatfuel formatted message back.
