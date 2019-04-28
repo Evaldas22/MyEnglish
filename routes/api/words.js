@@ -6,7 +6,8 @@ const getNewWords = require('./students').getNewWords;
 const getWordsArrayFromString = require('./students').getWordsArrayFromString;
 var _ = require('lodash');
 var unirest = require('unirest');
-var apiKey = process.env.apiKey;
+// var apiKey = process.env.apiKey;
+var apiKey = require('../../config/apiKey').apiKey;
 const url = require('url');
 
 
@@ -122,18 +123,19 @@ router.get('/word/definition', (req, res) => {
 		});
 });
 
-// @route   GET api/word/example/{word}
+// @route   GET api/word/example/{word}{numberOfWord}
 // @desc    Get example/-s of word
 // @access  Public
 router.get('/word/example', (req, res) => {
 	const query = url.parse(req.url, true).query;
 	const word = query['revisionWord'];
+	const numberOfWord = query['numberOfWord']
 
 	unirest.get(`https://wordsapiv1.p.rapidapi.com/words/${word}/examples`)
 		.header("X-RapidAPI-Host", "wordsapiv1.p.rapidapi.com")
 		.header("X-RapidAPI-Key", apiKey)
 		.end(function (result) {
-			res.json(constructExampleResponse(result.body));
+			res.json(constructExampleResponse(result.body, numberOfWord));
 		});
 });
 
@@ -186,15 +188,11 @@ const constructResponse = word => {
 
 const constructDefinitionResponse = definitionsObj => {
 	if (_.isEmpty(definitionsObj.definitions)) {
-		return {
-			"messages": [
-				{"text": "We couldn't find any definition for this word :/"}
-			]
-		};
+		return { "messages": [ {"text": "We couldn't find any definition for this word :/"}	]	};
 	}
 	else {
 		const differentDefinitionsObjs = [];
-
+		
 		definitionsObj.definitions.forEach(definition => {
 			if (!partOfSpeechExists(differentDefinitionsObjs, definition.partOfSpeech)) {
 				differentDefinitionsObjs.push(definition);
@@ -212,9 +210,7 @@ const constructDefinitionResponse = definitionsObj => {
 			}
 		});
 
-		return {
-			"messages": textMessages
-		};
+		return { "messages": textMessages	};
 	}
 }
 
@@ -230,22 +226,18 @@ const partOfSpeechExists = (differentDefinitionsObjs, partOfSpeech) => {
 	return containsPartOfSpeech;
 }
 
-const constructExampleResponse = exampleObj => {
+const constructExampleResponse = (exampleObj, exampleNumber) => {
 	if (_.isEmpty(exampleObj.examples)) {
-		return {
-			"messages": [
-				{"text": "We couldn't find any examples for this word :/"}
-			]
-		};
+		return { "messages": [ {"text": "We couldn't find any examples for this word :/"} ] };
 	}
 	else {
-		const randomNum = Math.floor(Math.random() * exampleObj.examples.length);
-		const example = exampleObj.examples[randomNum];
-		return {
-			"messages": [
-				{"text": example}
-			]
-		};
+		if (exampleNumber > exampleObj.examples.length) {
+			return { "messages": [ {"text": "Sorry, but I don't have any examples left..."} ]	}
+		}
+		else{
+			const example = exampleObj.examples[exampleNumber - 1];
+			return { "messages": [ {"text": example} ] };
+		}
 	}
 }
 
