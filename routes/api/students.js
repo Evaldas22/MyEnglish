@@ -6,35 +6,20 @@ var StudentModel = require('../../models/Student').StudentModel;
 var DayUpdateModel = require('../../models/DayUpdate').DayUpdateModel;
 var WordModel = require('../../models/Word').WordModel;
 
-// @route   GET api/groups
-// @desc    Get all groups
-// @access  Public
-router.get('/groups', (req, res) => {
-	GroupModel.find()
-		.then(group => res.json(group))
-});
-
-// @route   GET api/group/{groupName}
-// @desc    Get all students for certain group
-// @access  Public
-router.get('/group', (req, res) => {
-	GroupModel.find({ name: req.query.groupName })
-		.then(group => res.json(group))
-});
-
 // @route   POST api/student
 // @desc    Add student day update
 // @access  Public
 router.post('/student', (req, res) => {
-
-	const { messengerId, newWords, groupName } = req.query;
+	const messengerId = req.body['messenger user id'];
+	const groupName = req.body.groupName;
+	const newWords = req.body.newWords;
 
 	GroupModel.find().then(groups => {
 		const group = getGroup(groups, groupName);
 
 		// if this is new group
-		if (!group) {
-			const newStudent = constructNewStudent(req.query);
+		if (_.isUndefined(group)) {
+			const newStudent = constructNewStudent(req.body);
 			const newGroup = new GroupModel({
 				groupName: groupName,
 				students: [newStudent]
@@ -48,8 +33,8 @@ router.post('/student', (req, res) => {
 			const student = getStudent(groups, messengerId);
 
 			// if this is new student
-			if (!student) {
-				const newStudent = constructNewStudent(req.query);
+			if (_.isUndefined(student)) {
+				const newStudent = constructNewStudent(req.body);
 				group.students.push(newStudent);
 
 				group.save(err => {
@@ -59,7 +44,7 @@ router.post('/student', (req, res) => {
 			}
 			else {
 				// Need to update knownWords and dayUpdates
-				const newDayUpdate = constructDayUpdate(req.query);
+				const newDayUpdate = constructDayUpdate(req.body);
 				const newWordsToBeAdded = getNewWords(student.knownWords, getWordsArrayFromString(newWords));
 
 				student.dayUpdates.push(newDayUpdate);
@@ -91,25 +76,25 @@ const getNewWords = (knownWords, newWordsArr) => {
 	return newWordsToBeAdded;
 }
 
-const constructNewStudent = query => {
+const constructNewStudent = body => {
 	return new StudentModel({
-		messengerId: query.messengerId,
-		name: query.firstName + " " + query.lastName,
-		englishLevel: query.englishLevel,
-		groupName: query.groupName,
-		knownWords: constructKnownWords(getWordsArrayFromString(query.newWords)),
-		dayUpdates: [constructDayUpdate(query)]
+		messengerId: body["messenger user id"],
+		name: body["first name"] + " " + body["last name"],
+		englishLevel: body.englishLevel,
+		groupName: body.groupName,
+		knownWords: constructKnownWords(getWordsArrayFromString(body.newWords)),
+		dayUpdates: [constructDayUpdate(body)]
 	});
 }
 
-const constructDayUpdate = query => {
-	const newWordsArray = getWordsArrayFromString(query.newWords);
+const constructDayUpdate = body => {
+	const newWordsArray = getWordsArrayFromString(body.newWords);
 	const newUniqueWords = [...new Set(newWordsArray)];
 
 	return new DayUpdateModel({
-		learnedToday: getLearnedToday(query.learnedToday, query.learnedTodayExtended),
-		lessonRating: query.lessonRating || 0,
-		lessonRatingExplanation: query.lessonRatingExplanation || "",
+		learnedToday: getLearnedToday(body.learnedToday, body.learnedTodayExtended),
+		lessonRating: body.lessonRating || 0,
+		lessonRatingExplanation: body.lessonRatingExplanation || "",
 		newWords: newUniqueWords
 	});
 }
