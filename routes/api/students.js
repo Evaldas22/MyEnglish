@@ -10,6 +10,7 @@ var WordModel = require('../../models/Word').WordModel;
 // @desc    Add student day update
 // @access  Public
 router.post('/student', (req, res) => {
+	console.log(req.body);
 	const messengerId = req.body['messenger user id'];
 	const groupName = req.body.groupName;
 	const newWords = req.body.newWords;
