@@ -43,11 +43,11 @@ router.get('/word', (req, res) => {
 // @access  Public
 router.post('/word/update', (req, res) => {
 	const query = url.parse(req.url, true).query;
-	const messengerId = query['messenger user id'];
-	const groupName = query['groupName'];
-	const word = query['revisionWord'];
 	const knowIt = query['knowIt'];
-	console.log(req.body);
+
+	const messengerId = req.body['messenger user id'];
+	const groupName = req.body.groupName;
+	const word = req.body.revisionWord;
 
 	GroupModel.find()
 		.then(groups => {
@@ -81,10 +81,9 @@ router.post('/word/update', (req, res) => {
 // @desc    Add new words for the student
 // @access  Public
 router.post('/word/newWords', (req, res) => {
-	const query = url.parse(req.url, true).query;
-	const messengerId = query['messenger user id'];
-	const groupName = query['groupName'];
-	const newWords = query['newWords'];
+	const messengerId = req.body['messenger user id'];
+	const groupName = req.body.groupName;
+	const newWords = req.body.newWords;
 
 	GroupModel.find()
 		.then(groups => {
