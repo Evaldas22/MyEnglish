@@ -193,14 +193,41 @@ const constructDefinitionResponse = definitionsObj => {
 		};
 	}
 	else {
-		const randomNum = Math.floor(Math.random() * definitionsObj.definitions.length);
-		const definitionObj = definitionsObj.definitions[randomNum];
+		const differentDefinitionsObjs = [];
+
+		definitionsObj.definitions.forEach(definition => {
+			if (!partOfSpeechExists(differentDefinitionsObjs, definition.partOfSpeech)) {
+				differentDefinitionsObjs.push(definition);
+			}
+		});
+
+		const textMessages = differentDefinitionsObjs.map(definitionObj => {
+			if (_.isNull(definitionObj.partOfSpeech)) {
+				return {
+					"text": `${definitionsObj.word} - ${definitionObj.definition}`
+				}
+			}
+			else return {
+				"text": `${definitionsObj.word} (${definitionObj.partOfSpeech}) - ${definitionObj.definition}`
+			}
+		});
+
 		return {
-			"messages": [
-				{"text": `${definitionsObj.word} (${definitionObj.partOfSpeech}) - ${definitionObj.definition}`}
-			]
+			"messages": textMessages
 		};
 	}
+}
+
+const partOfSpeechExists = (differentDefinitionsObjs, partOfSpeech) => {
+	let containsPartOfSpeech = false;
+
+	differentDefinitionsObjs.forEach(definitionObj => {
+		if (definitionObj.partOfSpeech === partOfSpeech) {
+			containsPartOfSpeech = true;
+		}
+	});
+
+	return containsPartOfSpeech;
 }
 
 const constructExampleResponse = exampleObj => {
