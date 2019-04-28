@@ -5,12 +5,12 @@ var GroupModel = require('../../models/Group');
 var StudentModel = require('../../models/Student').StudentModel;
 var DayUpdateModel = require('../../models/DayUpdate').DayUpdateModel;
 var WordModel = require('../../models/Word').WordModel;
+var _ = require('lodash');
 
 // @route   POST api/student
 // @desc    Add student day update
 // @access  Public
 router.post('/student', (req, res) => {
-	console.log(req.body);
 	const messengerId = req.body['messenger user id'];
 	const groupName = req.body.groupName;
 	const newWords = req.body.newWords;
