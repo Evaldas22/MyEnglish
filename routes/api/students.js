@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const logger = require('../../logging/logger');
 
 var GroupModel = require('../../models/Group');
 var StudentModel = require('../../models/Student').StudentModel;
@@ -15,11 +16,15 @@ router.post('/student', (req, res) => {
 	const groupName = req.body.groupName;
 	const newWords = req.body.newWords;
 
+	logger.info(`POST api/student for ${messengerId}[${groupName}]`);
+
 	GroupModel.find().then(groups => {
 		const group = getGroup(groups, groupName);
 
 		// if this is new group
 		if (_.isUndefined(group)) {
+			logger.info(`Creating new group -  ${groupName}`);
+
 			const newStudent = constructNewStudent(req.body);
 			const newGroup = new GroupModel({
 				groupName: groupName,
@@ -27,19 +32,32 @@ router.post('/student', (req, res) => {
 			});
 
 			GroupModel.create(newGroup)
-				.then(saveGroupData => res.json(saveGroupData))
-				.catch(err => res.status(500).json(err));
+				.then(saveGroupData => {
+					logger.info(`Group ${groupName} created`);
+					res.json(saveGroupData)
+				})
+				.catch(err => {
+					logger.error(`Failed to create group ${groupName}`);
+					logger.error(err);
+					res.status(500).json(err)
+				});
 		}
 		else {
 			const student = getStudent(groups, messengerId);
 
 			// if this is new student
 			if (_.isUndefined(student)) {
+				logger.info(`Creating new student ${messengerId}`);
+
 				const newStudent = constructNewStudent(req.body);
 				group.students.push(newStudent);
 
 				group.save(err => {
-					if (err) return res.status(500).json(err);
+					if (err) {
+						logger.error(`Failed to save group ${groupName} with student ${messengerId}`);
+						logger.error(err);
+						return res.status(500).json(err);
+					}
 					res.json(newStudent);
 				});
 			}
@@ -52,7 +70,11 @@ router.post('/student', (req, res) => {
 				student.knownWords.push.apply(student.knownWords, newWordsToBeAdded);
 
 				group.save(err => {
-					if (err) return res.status(500).json(err);
+					if (err) {
+						logger.error(`Failed to save group ${groupName} with student ${messengerId}`);
+						logger.error(err);
+						return res.status(500).json(err);
+					}
 					res.json(student);
 				});
 			}
