@@ -8,7 +8,7 @@ var _ = require('lodash');
 var unirest = require('unirest');
 var apiKey = process.env.apiKey;
 const url = require('url');
-
+const logger = require('../../logging/logger');
 
 var GroupModel = require('../../models/Group');
 
@@ -18,16 +18,19 @@ var GroupModel = require('../../models/Group');
 router.get('/word', (req, res) => {
 	const query = url.parse(req.url, true).query;
 	const messengerId = query['messenger user id'];
+	logger.info(`GET api/word for  ${messengerId}`);
 	
 	GroupModel.find()
 		.then(groups => {
 			const student = getStudent(groups, messengerId);
 		
 			if (!student) {
-				res.status(500).json('Student not found');
+				logger.error(`student with ${messengerId} not found`);
+				return res.status(500).json('Student not found');
 			}
 			else if (student.knownWords.length <= 0) {
-				res.status(404).json("Student doesn't know any words");
+				logger.error(`student with ${messengerId} doesn't have any knownWords`);
+				return res.status(404).json("Student doesn't know any words");
 			}
 
 			const wordForRevision = getWordForRevision(student.knownWords);
@@ -49,19 +52,26 @@ router.post('/word/update', (req, res) => {
 	const groupName = req.body.groupName;
 	const word = req.body.revisionWord;
 
+	logger.info(`POST api/word/update for ${messengerId}[${groupName}] word - ${word}`);
+
 	GroupModel.find()
 		.then(groups => {
+
 			const group = getGroup(groups, groupName);
 			if (_.isUndefined(group)) {
-				res.status(404).json('Group not found');
+				logger.error(`group - ${group} does not exist`);
+				return res.status(404).json('Group not found');
 			}
+
 			const student = getStudent(groups, messengerId);
 
 			if (_.isUndefined(student)) {
-				res.status(500).json('Student not found');
+				logger.error(`student - ${messengerId} does not exist`);
+				return res.status(500).json('Student not found');
 			}
 			else if (student.knownWords.length <= 0) {
-				res.status(404).json("Student doesn't know any words");
+				logger.error(`student - ${messengerId} does not have any known words`);
+				return res.status(404).json("Student doesn't know any words");
 			}
 
 			student.knownWords.forEach(knownWord => {
@@ -71,7 +81,10 @@ router.post('/word/update', (req, res) => {
 			}); 
 
 			group.save(err => {
-				if (err) return res.status(500).json(err);
+				if (err) {
+					logger.error(`Error saving student(${messengerId}[${groupName}]) data`);
+					return res.status(500).json(err);
+				}
 				res.json(student);
 			});
 		})
@@ -85,23 +98,31 @@ router.post('/word/newWords', (req, res) => {
 	const groupName = req.body.groupName;
 	const newWords = req.body.newWords;
 
+	logger.info(`POST api/word/newWords for ${messengerId}[${groupName}]`);
+
 	GroupModel.find()
 		.then(groups => {
+
 			const group = getGroup(groups, groupName);
 			if (_.isUndefined(group)) {
-				res.status(404).json('Group not found');
+				logger.error(`group ${groupName} doesn not exist`);
+				return res.status(404).json('Group not found');
 			}
-			const student = getStudent(groups, messengerId);
 
+			const student = getStudent(groups, messengerId);
 			if (_.isUndefined(student)) {
-				res.status(404).json('Student not found');
+				logger.error(`student ${messengerId} doesn not exist`);
+				return res.status(404).json('Student not found');
 			} 
 
 			const newWordsToBeAdded = getNewWords(student.knownWords, getWordsArrayFromString(newWords));
 			student.knownWords.push.apply(student.knownWords, newWordsToBeAdded);
 
 			group.save(err => {
-				if (err) return res.status(500).json(err);
+				if (err) {
+					logger.error(`Error saving student(${messengerId}[${groupName}]) data`);
+					return res.status(500).json(err);
+				}
 				res.json(student);
 			});
 		})
@@ -113,6 +134,8 @@ router.post('/word/newWords', (req, res) => {
 router.get('/word/definition', (req, res) => {
 	const query = url.parse(req.url, true).query;
 	const word = query['revisionWord'];
+
+	logger.info(`GET api/word/definition for ${word}`);
 
 	unirest.get(`https://wordsapiv1.p.rapidapi.com/words/${word}/definitions`)
 		.header("X-RapidAPI-Host", "wordsapiv1.p.rapidapi.com")
@@ -129,6 +152,8 @@ router.get('/word/example', (req, res) => {
 	const query = url.parse(req.url, true).query;
 	const word = query['revisionWord'];
 	const numberOfWord = query['numberOfWord']
+
+	logger.info(`GET api/word/example for ${word} number ${numberOfWord}`);
 
 	unirest.get(`https://wordsapiv1.p.rapidapi.com/words/${word}/examples`)
 		.header("X-RapidAPI-Host", "wordsapiv1.p.rapidapi.com")
