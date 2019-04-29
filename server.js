@@ -63,6 +63,7 @@ const server_ip_address = process.env.OPENSHIFT_NODEJS_IP || '0.0.0.0';
 
 app.listen(server_port, server_ip_address, function () {
   console.log(`Listening on ${server_ip_address}:${server_port}`)
+  console.log('Current time is - ', new Date());
 });
 
 function chatfuelFormat(message) {
