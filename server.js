@@ -6,6 +6,7 @@ var mongoose = require('mongoose');
 const url = require('url');
 const axios = require('axios');
 var bodyParser = require('body-parser');
+const logger = require('./logging/logger');
 
 let sapaiToken = "";
 // sapaiToken = require('./config/sapAiToken').sapaiToken;
@@ -21,8 +22,8 @@ const app = express();
 // connect to MongoDB
 if (connectionString) {
   mongoose.connect(connectionString, { useNewUrlParser: true })
-    .then(() => { console.log('Connected to database succesfully'); })
-    .catch(err => { console.log(err); });
+    .then(() => { logger.info('Connected to database succesfully'); })
+    .catch(err => { logger.info(err); });
 }
 
 app.use(bodyParser.json());
@@ -62,28 +63,14 @@ const server_port = process.env.OPENSHIFT_NODEJS_PORT || 8080;
 const server_ip_address = process.env.OPENSHIFT_NODEJS_IP || '0.0.0.0';
 
 app.listen(server_port, server_ip_address, function () {
-  console.log(`Listening on ${server_ip_address}:${server_port}`)
-  console.log('Current time is - ', new Date());
+  logger.info(`Listening on ${server_ip_address}:${server_port}`);
 });
 
 function chatfuelFormat(message) {
-  // Source : { type: 'text', content: 'XXX' }
-  // Destination { text: 'XXX' }
   if (message.type === 'text') {
     return { text: message.content };
   }
 
-  // // Source: { type: 'picture', content: 'URL' }
-  // // Destination: { attachment: { type: 'image', payload: { url: 'URL' } } }
-  // if (message.type === 'picture') {
-  //   return {
-  //     attachment: {
-  //       type: 'image',
-  //       payload: { url: message.content },
-  //     },
-  //   };
-  // }
-
-  console.error('Unsupported message format: ', message.type);
+  logger.error('Unsupported message format: ', message.type);
   return { text: 'An error occured' };
 }
