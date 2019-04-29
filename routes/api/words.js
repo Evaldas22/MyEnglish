@@ -83,6 +83,7 @@ router.post('/word/update', (req, res) => {
 			group.save(err => {
 				if (err) {
 					logger.error(`Error saving student(${messengerId}[${groupName}]) data`);
+					logger.error(err);
 					return res.status(500).json(err);
 				}
 				res.json(student);
@@ -121,6 +122,7 @@ router.post('/word/newWords', (req, res) => {
 			group.save(err => {
 				if (err) {
 					logger.error(`Error saving student(${messengerId}[${groupName}]) data`);
+					logger.error(err);
 					return res.status(500).json(err);
 				}
 				res.json(student);
