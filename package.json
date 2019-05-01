@@ -6,7 +6,7 @@
   "scripts": {
     "preinstall": "cd client/ && NPM_CONFIG_PRODUCTION=false npm install && npm run build",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "concurrently \"node server/server.js --exec babel-node --\" \"npm run client\"",
+    "start": "node server/server.js",
     "client": "npm start --prefix client/",
     "dev" : "concurrently \"nodemon server/server.js --exec babel-node --\" \"npm run client\""
   },
