@@ -7,6 +7,7 @@ const url = require('url');
 const axios = require('axios');
 var bodyParser = require('body-parser');
 const logger = require('./logging/logger');
+const path = require('path');
 
 let sapaiToken = "";
 // sapaiToken = require('./config/sapAiToken').sapaiToken;
@@ -62,7 +63,11 @@ app.get('/smallTalk', (req, res) => {
 // serve static assets if in production
 if (process.env.NODE_ENV === "production") {
   logger.info("Application is running in production");
-  app.use(express.static('../client/build'));
+  app.use(express.static('client/build'));
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
+  });
 }
 
 const server_port = process.env.OPENSHIFT_NODEJS_PORT || 8080;
