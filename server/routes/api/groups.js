@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const logger = require('../../logging/logger');
 
-var GroupModel = require('../../models/Group');
+var GroupModel = require('../../models/Group').GroupModel;
 
 // @route   GET api/groups
 // @desc    Get all groups

@@ -9,11 +9,11 @@ var bodyParser = require('body-parser');
 const logger = require('./logging/logger');
 
 let sapaiToken = "";
-sapaiToken = require('./config/sapAiToken').sapaiToken;
+// sapaiToken = require('./config/sapAiToken').sapaiToken;
 const SAPCAI_REQUEST_TOKEN = process.env.sapaiToken || sapaiToken;
 
 var localConnectionString = "";
-localConnectionString = require('./config/connectionString').mongoURI;
+// localConnectionString = require('./config/connectionString').mongoURI;
 var connectionString = process.env.connectionString || localConnectionString;
 
 // Set up the express app
