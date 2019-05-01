@@ -34,7 +34,7 @@ app.use('/api', wordsRouter);
 
 // this will act as proxy, which will send request to SAP Conversational AI
 // and send back chatfuel formatted message back.
-app.get('/', (req, res) => {
+app.get('/smallTalk', (req, res) => {
   const query = url.parse(req.url, true).query;
   const userId = query['chatfuel user id'];
   const userMessage = query['user_message'];
@@ -58,6 +58,12 @@ app.get('/', (req, res) => {
       });
     });
 });
+
+// serve static assets if in production
+if (process.env.NODE_ENV === "production") {
+  looger.info("Application is running in production");
+  app.use(express.static('../client/build'));
+}
 
 const server_port = process.env.OPENSHIFT_NODEJS_PORT || 8080;
 const server_ip_address = process.env.OPENSHIFT_NODEJS_IP || '0.0.0.0';
