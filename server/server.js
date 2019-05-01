@@ -61,7 +61,7 @@ app.get('/smallTalk', (req, res) => {
 
 // serve static assets if in production
 if (process.env.NODE_ENV === "production") {
-  looger.info("Application is running in production");
+  logger.info("Application is running in production");
   app.use(express.static('../client/build'));
 }
 
