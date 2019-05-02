@@ -11,7 +11,6 @@ const GroupSchema = new mongoose.Schema({
     teacherId: {
         type: String,
         required: true,
-        default: ""
     },
     dailyTargets: [DailyTargetSchema]
 });

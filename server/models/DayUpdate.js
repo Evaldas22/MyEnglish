@@ -1,14 +1,12 @@
 const mongoose = require('mongoose');
+const DailyTargetUpdateSchema = require('./DailyTargetUpdate').DailyTargetUpdateSchema;
 
 const DayUpdateSchema = new mongoose.Schema({
     date: {
         type: Date,
         default: Date.now
     },
-    learnedToday: {
-        type: String,
-        required: true
-    },
+    dailyTargetUpdate: [DailyTargetUpdateSchema],
     lessonRating: {
         type: Number,
         required: true
