@@ -3,7 +3,8 @@ const router = express.Router();
 const logger = require('../../logging/logger');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const uuidv4  = require('uuid/v4');
+const uuidv4 = require('uuid/v4');
+const secret = require('../../config/secret').secret;
 
 // Load input validation
 const validateRegisterInput = require('../../validation/register');
@@ -57,6 +58,69 @@ router.post('/teachers/register', (req, res) => {
           })
           .catch(err => logger.error(err));
       });
+    });
+  });
+});
+
+// @route   POST api/teachers/login
+// @desc    Login teacher and return JWT token
+// @access  Public
+router.post('/teachers/login', (req, res) => {
+  logger.info('POST api/teachers/login');
+
+  // Form validation
+  const { errors, isValid } = validateLoginInput(req.body);
+
+  // Check validation
+  if (!isValid) {
+    logger.error('Error registering teacher');
+    logger.error(errors.name);
+    logger.error(errors.password);
+    return res.status(400).json(errors);
+  }
+
+  const teacherName = req.body.name;
+  const password = req.body.password;
+
+  // Find teacher by name
+  Teacher.findOne({ name: teacherName }).then(teacher => {
+    // Check if teacher exists
+    if (!teacher) {
+      logger.error(`Teacher ${teacherName} does not exists`);
+      return res.status(404).json({ nameNotfound: 'Teacher with that name not found' });
+    }
+    
+    // Check password
+    bcrypt.compare(password, teacher.password).then(isMatch => {
+      if (isMatch) {
+        // User matched
+        // Create JWT Payload
+        const payload = {
+          id: teacher.id,
+          name: teacher.name
+        };
+        console.log(secret);
+        // Sign token
+        jwt.sign(
+          payload,
+          secret,
+          {
+            expiresIn: 31556926 // 1 year in seconds
+          },
+          (err, token) => {
+            logger.info(`Teacher ${teacher.name} logged in`);
+            res.json({
+              success: true,
+              token: `Bearer ${token}`
+            });
+          }
+        );
+      } else {
+        logger.error('Incorrect password');
+        return res
+          .status(400)
+          .json({ passwordincorrect: 'Password incorrect' });
+      }
     });
   });
 });
