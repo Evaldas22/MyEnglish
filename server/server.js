@@ -5,6 +5,7 @@ const url = require('url');
 const axios = require('axios');
 const path = require('path');
 const logger = require('./logging/logger');
+const passport = require('passport');
 
 var studentsRouter = require('./routes/api/students').router;
 var groupsRouter = require('./routes/api/groups');
@@ -29,6 +30,13 @@ if (connectionString) {
     .catch(err => { logger.info(err); });
 }
 
+// Use Passport middleware
+app.use(passport.initialize());
+
+// Passport config
+require('./validation/passport')(passport);
+
+// Routes
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/api', studentsRouter);
