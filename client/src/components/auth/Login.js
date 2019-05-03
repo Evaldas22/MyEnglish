@@ -1,5 +1,9 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
+import { connect } from "react-redux";
+import { loginUser } from "../../actions/authActions";
+import classnames from "classnames";
+import PropTypes from "prop-types";
 
 class Login extends Component {
 
@@ -10,6 +14,16 @@ class Login extends Component {
       password: "",
       errors: {}
     };
+  }
+
+  componentWillReceiveProps = nextProps => {
+    if (nextProps.auth.isAuthenticated) {
+      this.props.history.push("/dashboard"); // push user to dashboard when they login
+    }
+
+    if (nextProps.errors) {
+      this.setState({ errors: nextProps.errors });
+    }
   }
 
   onChange = e => {
@@ -23,6 +37,8 @@ class Login extends Component {
       name: this.state.name,
       password: this.state.password
     };
+
+    this.props.loginUser(teacherData);
   };
 
   render() {
@@ -51,8 +67,10 @@ class Login extends Component {
                   error={errors.name}
                   id="name"
                   type="text"
+                  className={classnames("", { invalid: errors.name })}
                 />
                 <label htmlFor="name">Name</label>
+                <span className="red-text">{errors.name}</span>
               </div>
               <div className="input-field col s12">
                 <input
@@ -61,8 +79,13 @@ class Login extends Component {
                   error={errors.password}
                   id="password"
                   type="password"
+                  className={classnames("", { invalid: errors.password || errors.passwordincorrect })}
                 />
                 <label htmlFor="password">Password</label>
+                <span className="red-text">
+                  {errors.password}
+                  {errors.passwordincorrect}
+                </span>
               </div>
               <div className="col s12" style={{ paddingLeft: "11.250px" }}>
                 <button
@@ -85,4 +108,16 @@ class Login extends Component {
     );
   }
 }
-export default Login;
+
+Login.propTypes = {
+  loginUser: PropTypes.func.isRequired,
+  auth: PropTypes.object.isRequired,
+  errors: PropTypes.object.isRequired
+};
+
+const mapStateToProps = state => ({
+  auth: state.auth,
+  errors: state.errors
+});
+
+export default connect(mapStateToProps, { loginUser })(Login);
