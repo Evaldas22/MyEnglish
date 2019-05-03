@@ -1,20 +1,23 @@
 var express = require('express');
+var mongoose = require('mongoose');
+var bodyParser = require('body-parser');
+const url = require('url');
+const axios = require('axios');
+const path = require('path');
+const logger = require('./logging/logger');
+const passport = require('passport');
+
 var studentsRouter = require('./routes/api/students').router;
 var groupsRouter = require('./routes/api/groups');
 var wordsRouter = require('./routes/api/words');
-var mongoose = require('mongoose');
-const url = require('url');
-const axios = require('axios');
-var bodyParser = require('body-parser');
-const logger = require('./logging/logger');
-const path = require('path');
+var teachersRouter = require('./routes/api/teachers');
 
 let sapaiToken = "";
 // sapaiToken = require('./config/sapAiToken').sapaiToken;
 const SAPCAI_REQUEST_TOKEN = process.env.sapaiToken || sapaiToken;
 
 var localConnectionString = "";
-// localConnectionString = require('./config/connectionString').mongoURI;
+localConnectionString = require('./config/connectionString').mongoURI;
 var connectionString = process.env.connectionString || localConnectionString;
 
 // Set up the express app
@@ -27,9 +30,17 @@ if (connectionString) {
     .catch(err => { logger.info(err); });
 }
 
+// Use Passport middleware
+app.use(passport.initialize());
+
+// Passport config
+require('./validation/passport')(passport);
+
+// Routes
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/api', studentsRouter);
+app.use('/api', teachersRouter);
 app.use('/api', groupsRouter);
 app.use('/api', wordsRouter);
 

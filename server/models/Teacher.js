@@ -6,11 +6,19 @@ const TeacherSchema = new mongoose.Schema({
       type: String,
       required: true
     },
-    fullName: {
+    name: {
       type: String,
       required: true
     },
-    groups: [GroupSchema]
+    password: {
+      type: String,
+      required: true
+    },
+    groups: [GroupSchema],
+    dateCreated: {
+      type: Date,
+      default: Date.now
+    }
 });
 
 const TeacherModel = mongoose.model("teachers", TeacherSchema);
