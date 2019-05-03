@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const logger = require('../../logging/logger');
 
-var GroupModel = require('../../models/Group');
+var GroupModel = require('../../models/Group').GroupModel;
 var StudentModel = require('../../models/Student').StudentModel;
 var DayUpdateModel = require('../../models/DayUpdate').DayUpdateModel;
 var WordModel = require('../../models/Word').WordModel;

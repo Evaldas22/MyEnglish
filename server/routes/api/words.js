@@ -10,7 +10,7 @@ var apiKey = process.env.apiKey;
 const url = require('url');
 const logger = require('../../logging/logger');
 
-var GroupModel = require('../../models/Group');
+var GroupModel = require('../../models/Group').GroupModel;
 
 // @route   GET api/word/{messengerId}
 // @desc    Get one word for revision
