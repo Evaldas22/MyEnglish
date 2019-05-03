@@ -17,7 +17,7 @@ let sapaiToken = "";
 const SAPCAI_REQUEST_TOKEN = process.env.sapaiToken || sapaiToken;
 
 var localConnectionString = "";
-localConnectionString = require('./config/connectionString').mongoURI;
+// localConnectionString = require('./config/connectionString').mongoURI;
 var connectionString = process.env.connectionString || localConnectionString;
 
 // Set up the express app
