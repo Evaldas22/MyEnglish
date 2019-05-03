@@ -6,7 +6,10 @@ const DayUpdateSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
-    dailyTargetUpdate: [DailyTargetUpdateSchema],
+    learnedToday: {
+        type: String,
+        required: true
+    },
     lessonRating: {
         type: Number,
         required: true
