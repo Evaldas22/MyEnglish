@@ -42,6 +42,7 @@ router.post('/teachers/register', (req, res) => {
       teacherId: uuidv4(),
       name: req.body.name,
       password: req.body.password,
+      role: 'teacher',
       groups: []
     });
 

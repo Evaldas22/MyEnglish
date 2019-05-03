@@ -2,7 +2,8 @@ const JwtStrategy = require('passport-jwt').Strategy;
 const ExtractJwt = require('passport-jwt').ExtractJwt;
 const mongoose = require('mongoose');
 const Teacher = mongoose.model('teachers');
-const secret = require('../config/secret').secret;
+// const secret = require('../config/secret').secret;
+const secret = process.env.secret;
 const logger = require('../logging/logger');
 
 const opts = {};
