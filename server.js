@@ -4,13 +4,13 @@ var bodyParser = require('body-parser');
 const url = require('url');
 const axios = require('axios');
 const path = require('path');
-const logger = require('./logging/logger');
+const logger = require('./server/logging/logger');
 const passport = require('passport');
 
-var studentsRouter = require('./routes/api/students').router;
-var groupsRouter = require('./routes/api/groups');
-var wordsRouter = require('./routes/api/words');
-var teachersRouter = require('./routes/api/teachers');
+var studentsRouter = require('./server/routes/api/students').router;
+var groupsRouter = require('./server/routes/api/groups');
+var wordsRouter = require('./server/routes/api/words');
+var teachersRouter = require('./server/routes/api/teachers');
 
 let sapaiToken = "";
 // sapaiToken = require('./config/sapAiToken').sapaiToken;
@@ -34,7 +34,7 @@ if (connectionString) {
 app.use(passport.initialize());
 
 // Passport config
-require('./validation/passport')(passport);
+require('./server/validation/passport')(passport);
 
 // Use body-parser middleware
 app.use(bodyParser.json());
@@ -78,6 +78,7 @@ if (process.env.NODE_ENV === "production") {
   logger.info("Directory: " + __dirname);
   logger.info("Application is running in production");
   app.use(express.static('client/build'));
+  logger.info(path.resolve(__dirname, 'client', 'build', 'index.html'));
 
   app.get("*", (req, res) => {
     res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
