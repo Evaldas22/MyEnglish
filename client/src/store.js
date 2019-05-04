@@ -1,9 +1,13 @@
 import { createStore, applyMiddleware, compose } from "redux";
 import thunk from "redux-thunk";
-import logger from 'redux-logger';
 import rootReducer from './reducers';
 
-const middleware = [thunk, logger];
+const middleware = [thunk];
+
+if (process.env.NODE_ENV !== 'production') {
+  import logger from 'redux-logger';
+  middleware = [...middleware, logger];
+}
 
 const store = createStore(
   rootReducer,
