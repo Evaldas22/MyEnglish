@@ -75,10 +75,7 @@ app.get('/smallTalk', (req, res) => {
 
 // serve static assets if in production
 if (process.env.NODE_ENV === "production") {
-  logger.info("Directory: " + __dirname);
-  logger.info("Application is running in production");
   app.use(express.static('client/build'));
-  logger.info(path.resolve(__dirname, 'client', 'build', 'index.html'));
 
   app.get("*", (req, res) => {
     res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
