@@ -42,6 +42,7 @@ router.post('/teachers/register', (req, res) => {
       teacherId: uuidv4(),
       name: req.body.name,
       password: req.body.password,
+      role: 'teacher',
       groups: []
     });
 
@@ -98,9 +99,9 @@ router.post('/teachers/login', (req, res) => {
         // Create JWT Payload
         const payload = {
           id: teacher.id,
-          name: teacher.name
+          name: teacher.name,
+          role: teacher.role
         };
-        console.log(secret);
         // Sign token
         jwt.sign(
           payload,
