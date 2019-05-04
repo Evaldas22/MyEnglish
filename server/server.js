@@ -36,9 +36,11 @@ app.use(passport.initialize());
 // Passport config
 require('./validation/passport')(passport);
 
-// Routes
+// Use body-parser middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Routes
 app.use('/api', studentsRouter);
 app.use('/api', teachersRouter);
 app.use('/api', groupsRouter);
@@ -74,7 +76,7 @@ app.get('/smallTalk', (req, res) => {
 // serve static assets if in production
 if (process.env.NODE_ENV === "production") {
   logger.info("Application is running in production");
-  app.use(express.static('client/build'));
+  app.use(express.static('../client/build'));
 
   app.get("*", (req, res) => {
     res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
