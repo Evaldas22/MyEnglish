@@ -4,12 +4,10 @@ import jwt_decode from "jwt-decode";
 
 import * as types from "./types";
 
-const endpoint = "http://localhost:8080";
-
 // Register User
 export const registerUser = (userData, history) => dispatch => {
   axios
-    .post(endpoint + "/api/teachers/register", userData)
+    .post("/api/teachers/register", userData)
     .then(res => history.push("/login")) // re-direct to login on successful register
     .catch(err =>
       dispatch({
@@ -22,7 +20,7 @@ export const registerUser = (userData, history) => dispatch => {
 // Login - get user token
 export const loginUser = userData => dispatch => {
   axios
-    .post(endpoint + "/api/teachers/login", userData)
+    .post("/api/teachers/login", userData)
     .then(res => {
       // Save to localStorage
       // Set token to localStorage
@@ -35,11 +33,11 @@ export const loginUser = userData => dispatch => {
       // Set current user
       dispatch(setCurrentUser(decoded));
     })
-    .catch(err =>
-      dispatch({
+    .catch(err => {
+      return dispatch({
         type: types.GET_ERRORS,
         payload: err.response.data
-      })
+      })}
     );
 };
 

@@ -17,6 +17,15 @@ class Register extends Component {
     };
   }
 
+  componentDidMount() {
+    if (!this.props.auth.isAuthenticated) {
+      this.props.history.push("/login");
+    }
+    else if (this.props.auth.isAuthenticated && this.props.auth.user.role !== "admin") {
+      this.props.history.push("/dashboard");
+    }
+  }
+
   componentWillReceiveProps = nextProps => {
     if (nextProps.errors) {
       this.setState({ errors: nextProps.errors });
@@ -41,7 +50,6 @@ class Register extends Component {
 
   render() {
     const { errors } = this.state;
-
     return (
       <div className="container">
         <div className="row">
@@ -124,4 +132,4 @@ const mapStateToProps = state => ({
   errors: state.errors
 });
 
-export default connect(mapStateToProps, { registerUser })(Register);
+export default connect(mapStateToProps, { registerUser })(withRouter(Register));
