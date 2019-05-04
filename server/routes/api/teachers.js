@@ -99,9 +99,9 @@ router.post('/teachers/login', (req, res) => {
         // Create JWT Payload
         const payload = {
           id: teacher.id,
-          name: teacher.name
+          name: teacher.name,
+          role: teacher.role
         };
-        console.log(secret);
         // Sign token
         jwt.sign(
           payload,
