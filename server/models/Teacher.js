@@ -22,6 +22,10 @@ const TeacherSchema = new mongoose.Schema({
     dateCreated: {
       type: Date,
       default: Date.now
+    },
+    firstTimeLoggedIn: {
+      type: Boolean,
+      default: true
     }
 });
 

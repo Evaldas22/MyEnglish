@@ -5,7 +5,7 @@ const validateRegisterInput = teacher => {
   let errors = {};
 
   // Convert empty fields to an empty string so we can use validator functions
-  teacher.name = !isEmpty(teacher.name) ? teacher.name : "";
+  teacher.name = !isEmpty(teacher.name) ? teacher.name.trim() : "";
   teacher.password = !isEmpty(teacher.password) ? teacher.password : "";
   teacher.password2 = !isEmpty(teacher.password2) ? teacher.password2 : "";
 
