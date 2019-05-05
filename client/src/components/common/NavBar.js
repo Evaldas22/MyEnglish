@@ -31,6 +31,12 @@ class NavBar extends Component {
             {
               this.props.auth.isAuthenticated ?
                 <li>
+                  <a href='/changePwd' className="nav-item">Change password</a>
+                </li> : null
+            }
+            {
+              this.props.auth.isAuthenticated ?
+                <li>
                   <a onClick={this.onLogoutClick} className="nav-item">Logout</a>
                 </li> : null
             }

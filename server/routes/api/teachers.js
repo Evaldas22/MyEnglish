@@ -27,9 +27,9 @@ router.post('/teachers/register', (req, res) => {
   // Check validation
   if (!isValid) {
     logger.error('Error registering teacher');
-    logger.error(errors.name);
-    logger.error(errors.password);
-    logger.error(errors.password2);
+    if (errors.name) logger.error(errors.name);
+    if (errors.password) logger.error(errors.password);
+    if (errors.password2) logger.error(errors.password2);
     return res.status(400).json(errors);
   }
 
@@ -77,8 +77,8 @@ router.post('/teachers/login', (req, res) => {
   // Check validation
   if (!isValid) {
     logger.error('Error registering teacher');
-    logger.error(errors.name);
-    logger.error(errors.password);
+    if (errors.name) logger.error(errors.name);
+    if (errors.password) logger.error(errors.password);
     return res.status(400).json(errors);
   }
 
@@ -141,8 +141,8 @@ router.post('/teachers/changePwd', (req, res) => {
   // Check validation
   if (!isValid) {
     logger.error('Error changing user password');
-    logger.error(errors.password);
-    logger.error(errors.password2);
+    if (errors.password) logger.error(errors.password);
+    if (errors.password2) logger.error(errors.password2);
     return res.status(400).json(errors);
   }
 

@@ -10,6 +10,7 @@ import './App.css';
 import NavBar from "./components/common/NavBar";
 import Landing from "./components/common/Landing";
 import Login from "./components/auth/Login";
+import ChangePwd from "./components/auth/ChangePwd";
 import Register from "./components/auth/Register";
 import PrivateRoute from "./components/privateRoutes/PrivateRoute";
 import AdminRoute from "./components/privateRoutes/AdminRoute";
@@ -45,6 +46,7 @@ class App extends Component {
             <Route exact path="/login" component={Login} />
             <Switch>
               <PrivateRoute exact path="/dashboard" component={Dashboard} />
+              <PrivateRoute exact path="/changePwd" component={ChangePwd} />
               <AdminRoute exact path="/register" component={Register} />
             </Switch>
           </div>

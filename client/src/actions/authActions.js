@@ -65,3 +65,21 @@ export const logoutUser = () => dispatch => {
   // Set current user to empty object {} which will set isAuthenticated to false
   dispatch(setCurrentUser({}));
 };
+
+// Change user password
+export const changePwd = userData => dispatch => {
+  return axios
+          .post("/api/teachers/changePwd", userData)
+          .then(res => {
+            dispatch({
+              type: types.CLEAR_ERRORS
+            })
+            return res;
+          })
+          .catch(err =>
+            dispatch({
+              type: types.GET_ERRORS,
+              payload: err.response.data
+            })
+          );
+}
