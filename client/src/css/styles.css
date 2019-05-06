@@ -5,3 +5,8 @@
 .navbar {
   background-color: #174e00;
 }
+
+.navItem:hover {
+  color: white !important;
+  text-decoration: none !important;
+}

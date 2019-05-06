@@ -14,10 +14,10 @@ class NavBar extends Component {
   render() {
     return (
       <div>
-        <nav className="navbar navbar-expand-lg navbar-light bg-light">
+        <nav className="navbar navbar-expand-lg navbar-light">
           <ul className="navbar-nav mr-auto">
             <li>
-              <Link to='/dashboard' className="home nav-link col s5 brand-logo white-text"
+              <Link to='/dashboard' className="home nav-link col s5 brand-logo white-text navItem"
                 style={{ fontFamily: "monospace" }}>
                 <i className="material-icons">home</i>Home
               </Link>
@@ -25,19 +25,19 @@ class NavBar extends Component {
             {
               this.props.auth.isAuthenticated && this.props.auth.user.role === "admin" ?
                 <li>
-                  <a href='/register' className="nav-item">New teacher</a>
+                  <a href='/register' className="nav-item navItem">New teacher</a>
                 </li> : null
             }
             {
               this.props.auth.isAuthenticated ?
                 <li>
-                  <a href='/changePwd' className="nav-item">Change password</a>
+                  <a href='/changePwd' className="nav-item navItem">Change password</a>
                 </li> : null
             }
             {
               this.props.auth.isAuthenticated ?
                 <li>
-                  <a onClick={this.onLogoutClick} className="nav-item">Logout</a>
+                  <a onClick={this.onLogoutClick} className="nav-item navItem">Logout</a>
                 </li> : null
             }
           </ul>

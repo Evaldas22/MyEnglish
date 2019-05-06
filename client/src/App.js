@@ -15,6 +15,7 @@ import Register from "./components/auth/Register";
 import PrivateRoute from "./components/privateRoutes/PrivateRoute";
 import AdminRoute from "./components/privateRoutes/AdminRoute";
 import Dashboard from "./components/dashboard/Dashboard";
+import NewGroup from "./components/groups/NewGroup";
 
 // Check for token to keep user logged in
 if (localStorage.jwtToken) {
@@ -45,9 +46,10 @@ class App extends Component {
             <Route exact path="/" component={Landing} />
             <Route exact path="/login" component={Login} />
             <Switch>
+              <AdminRoute exact path="/register" component={Register} />
               <PrivateRoute exact path="/dashboard" component={Dashboard} />
               <PrivateRoute exact path="/changePwd" component={ChangePwd} />
-              <AdminRoute exact path="/register" component={Register} />
+              <PrivateRoute exact path="/createNewGroup" component={NewGroup} />
             </Switch>
           </div>
         </BrowserRouter>
