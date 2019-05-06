@@ -2,10 +2,6 @@ const mongoose = require('mongoose');
 const GroupSchema = require('./Group').GroupSchema;
 
 const TeacherSchema = new mongoose.Schema({
-    teacherId: {
-      type: String,
-      required: true
-    },
     name: {
       type: String,
       required: true

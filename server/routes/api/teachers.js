@@ -40,7 +40,6 @@ router.post('/teachers/register', (req, res) => {
     }
 
     const newTeacher = new Teacher({
-      teacherId: uuidv4(),
       name: req.body.name.trim(),
       password: req.body.password,
       role: 'teacher',
