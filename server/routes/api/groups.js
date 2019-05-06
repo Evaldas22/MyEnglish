@@ -8,17 +8,17 @@ var GroupModel = require('../../models/Group').GroupModel;
 // @desc    Get all groups
 // @access  Public
 router.get('/groups', (req, res) => {
-	logger.info("GET api/groups - requesting data about all groups");
+	logger.info("GET api/groups");
 	GroupModel.find()
 		.then(group => res.json(group))
 });
 
-// @route   GET api/group/{groupName}
-// @desc    Get all students for certain group
+// @route   GET api/groups/{teacherId}
+// @desc    Get all students for one teacher
 // @access  Public
-router.get('/group', (req, res) => {
-	logger.info(`GET api/group/${groupName} - requesting data about specific group`);
-	GroupModel.find({ name: req.query.groupName })
+router.get('/groups', (req, res) => {
+	logger.info(`GET api/groups/${req.query.teacherId} `);
+	GroupModel.find({ teacherId: req.query.teacherId })
 		.then(group => res.json(group))
 });
 
