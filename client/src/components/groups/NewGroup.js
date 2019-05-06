@@ -3,6 +3,7 @@ import { connect } from "react-redux";
 import { Container, Row, Col } from 'reactstrap';
 import classnames from "classnames";
 import { Link } from "react-router-dom";
+import { createNewGroup } from "../../actions/groupActions";
 
 class NewGroup extends Component {
   constructor() {
@@ -40,7 +41,7 @@ class NewGroup extends Component {
       teacherId: this.state.teacherId
     };
 
-    // this.props.registerUser(newGroup, this.props.history);
+    this.props.createNewGroup(newGroup, this.props.history);
   };
 
   render() {
@@ -97,4 +98,4 @@ const mapStateToProps = (state) => ({
   auth: state.auth
 })
 
-export default connect(mapStateToProps, {})(NewGroup);
+export default connect(mapStateToProps, { createNewGroup })(NewGroup);

@@ -19,3 +19,16 @@ export const getGroups = teacherId => dispatch => {
       })
     );
 };
+
+// Create new group
+export const createNewGroup = (newGroup, history) => dispatch => {
+  axios
+    .post("/api/groups/newGroup", newGroup)
+    .then(res => history.push("/dashboard"))
+    .catch(err =>
+      dispatch({
+        type: types.GET_ERRORS,
+        payload: err.response.data
+      })
+    );
+};
