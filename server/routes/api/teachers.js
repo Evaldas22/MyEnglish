@@ -3,7 +3,6 @@ const router = express.Router();
 const logger = require('../../logging/logger');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const uuidv4 = require('uuid/v4');
 // const secret = require('../../config/secret').secret;
 const secret = process.env.secret;
 
