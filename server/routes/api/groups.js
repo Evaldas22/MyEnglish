@@ -102,6 +102,6 @@ router.post('/groups/newDailyTarget', (req, res) => {
 	})
 });
 
-const getArrayFromString = string => (string.split(/[\s,]+/))
+const getArrayFromString = string => (string.split(/[,.][\s]*/))
 
 module.exports = router;
