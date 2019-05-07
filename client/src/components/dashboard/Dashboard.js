@@ -19,7 +19,6 @@ class Dashboard extends Component {
   };
 
   render() {
-    console.log('Groups', this.props.groups);
     return (
       <Container>
         <Row>
@@ -32,7 +31,7 @@ class Dashboard extends Component {
             <Row>
               <Col>
                 <Link to='/createNewGroup'>
-                  <i onClick={this.addNewGroup} className="fas fa-plus-circle fa-3x"></i>
+                  <i className="fas fa-plus-circle fa-3x"></i>
                 </Link>
               </Col>
             </Row>

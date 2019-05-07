@@ -32,3 +32,16 @@ export const createNewGroup = (newGroup, history) => dispatch => {
       })
     );
 };
+
+// Create new daily target
+export const createNewDailyTarget = (newDailyTarget, history) => dispatch => {
+  return axios
+    .post("/api/groups/newDailyTarget", newDailyTarget)
+    .then(res => history.push("/dashboard"))
+    .catch(err =>
+      dispatch({
+        type: types.GET_ERRORS,
+        payload: err.response.data
+      })
+    );
+};

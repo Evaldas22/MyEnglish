@@ -72,7 +72,6 @@ class ChangePwd extends Component {
           password2: ""
         });
 
-        console.log(res);
         if (res.type !== types.GET_ERRORS) {
           this.successButton.current.click();
         }

@@ -16,6 +16,8 @@ import PrivateRoute from "./components/privateRoutes/PrivateRoute";
 import AdminRoute from "./components/privateRoutes/AdminRoute";
 import Dashboard from "./components/dashboard/Dashboard";
 import NewGroup from "./components/groups/NewGroup";
+import GroupDetails from "./components/groups/GroupDetails";
+import NewDailyTarget from "./components/dailyTargets/NewDailyTarget";
 
 // Check for token to keep user logged in
 if (localStorage.jwtToken) {
@@ -50,6 +52,8 @@ class App extends Component {
               <PrivateRoute exact path="/dashboard" component={Dashboard} />
               <PrivateRoute exact path="/changePwd" component={ChangePwd} />
               <PrivateRoute exact path="/createNewGroup" component={NewGroup} />
+              <PrivateRoute exact path="/groupDetails" component={GroupDetails} />
+              <PrivateRoute exact path="/newDailyTarget" component={NewDailyTarget} />
             </Switch>
           </div>
         </BrowserRouter>

@@ -10,7 +10,7 @@ class GroupList extends Component {
     <ListGroup>
       {
         !_.isEmpty(this.props.groups) ? 
-          this.props.groups.map((group, index) => <GroupItem key={index} groupName={group.groupName}/>) : null
+          this.props.groups.map((group, index) => <GroupItem key={index} group={group}/>) : null
       }
     </ListGroup>
     )
