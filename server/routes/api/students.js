@@ -127,15 +127,6 @@ const constructDayUpdate = (newWords, lessonRating, lessonRatingExplanation) => 
 	});
 }
 
-const constructKnownWords = words => {
-	return words.map(word => {
-		return new WordModel({
-			word: word,
-			score: 0
-		})
-	})
-}
-
 const getStudent = (group, messengerId) => {
 	let existingStudent;
 	group.students.forEach(student => {
