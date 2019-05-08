@@ -8,6 +8,56 @@ var DayUpdateModel = require('../../models/DayUpdate').DayUpdateModel;
 var WordModel = require('../../models/Word').WordModel;
 var _ = require('lodash');
 
+// @route   POST api/newStudent
+// @desc    Create new student
+// @access  Public
+router.post('/newStudent', (req, res) => {
+	logger.info('POST /api/newStudent');
+
+	// Get all the parameters from POST body
+	const messengerId = req.body['messenger user id'];
+	const firstName = req.body['first name'];
+	const lastName = req.body['last name'];
+	const { englishLevel, groupName } = req.body;
+
+	GroupModel.findOne({ groupName: groupName }).then(group => {
+		if (!group) {
+			logger.error(`Group ${groupName} not found`);
+			return res.json(400).json(`Group ${groupName} not found`);
+		}
+
+		// check if that student already exist
+		const existingStudent = getStudent(group, messengerId);
+		if (existingStudent) {
+			logger.error(`Student ${messengerId} already exist`);
+			return res.json(400).json(`Student ${messengerId} already exist`);
+		}
+
+		// create new student
+		const newStudent = new StudentModel({
+			messengerId: messengerId,
+			name: firstName + " " + lastName,
+			englishLevel: englishLevel,
+			groupName: groupName,
+			knownWords: [],
+			dayUpdates: [],
+			dailyTargetUpdates: []
+		});
+
+		// add and save new student
+		group.students.push(newStudent);
+
+		group.save(err => {
+			if (err) {
+				logger.error(`Failed to save group ${groupName} with student ${messengerId}`);
+				logger.error(err);
+				return res.status(500).json(err);
+			}
+			res.json(newStudent);
+		});
+	})
+});
+
 // @route   POST api/student
 // @desc    Add student day update
 // @access  Public
@@ -18,9 +68,7 @@ router.post('/student', (req, res) => {
 
 	logger.info(`POST api/student for ${messengerId}[${groupName}]`);
 
-	GroupModel.find().then(groups => {
-		const group = getGroup(groups, groupName);
-
+	GroupModel.findOne({ groupName: groupName }).then(group => {
 		// if this is new group
 		if (_.isUndefined(group)) {
 			logger.info(`Creating new group -  ${groupName}`);
@@ -43,7 +91,7 @@ router.post('/student', (req, res) => {
 				});
 		}
 		else {
-			const student = getStudent(groups, messengerId);
+			const student = getStudent(group, messengerId);
 
 			// if this is new student
 			if (_.isUndefined(student)) {
@@ -131,26 +179,13 @@ const constructKnownWords = words => {
 	})
 }
 
-const getGroup = (groups, groupName) => {
-	let existingGroup;
-	groups.forEach(group => {
-		if (group.groupName === groupName) {
-			existingGroup = group;
+const getStudent = (group, messengerId) => {
+	let existingStudent;
+	group.students.forEach(student => {
+		if (student.messengerId === messengerId) {
+			existingStudent = student;
 			return;
 		}
-	})
-	return existingGroup;
-}
-
-const getStudent = (groups, messengerId) => {
-	let existingStudent;
-	groups.forEach(group => {
-		group.students.forEach(student => {
-			if (student.messengerId === messengerId) {
-				existingStudent = student;
-				return;
-			}
-		})
 	})
 	return existingStudent;
 }
@@ -165,6 +200,5 @@ const getWordsArrayFromString = (wordsString) => {
 
 exports.router = router;
 exports.getStudent = getStudent;
-exports.getGroup = getGroup;
 exports.getNewWords = getNewWords;
 exports.getWordsArrayFromString = getWordsArrayFromString;
