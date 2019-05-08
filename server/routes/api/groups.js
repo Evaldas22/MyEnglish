@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const logger = require('../../logging/logger');
 const validateRegisterInput = require('../../validation/newGroup');
+const moment = require('moment');
+const DailyTargetUpdateModel = require('../../models/DailyTargetUpdate').DailyTargetUpdateModel;
+const DailyTargetUpdateItemModel = require('../../models/DailyTargetUpdateItem').DailyTargetUpdateItemModel;
 
 var GroupModel = require('../../models/Group').GroupModel;
 const DailyTargetModel = require('../../models/DailyTarget').DailyTargetModel;
@@ -74,9 +77,116 @@ router.get('/groups', (req, res) => {
 // @desc    Get all group names
 // @access  Public
 router.get('/groupNames', (req, res) => {
-	logger.info("GET api/groups");
+	logger.info("GET api/groupNames");
 	GroupModel.find()
 		.then(groups => res.json(constructChatFuelGroupNames(groups)))
+});
+
+// @route   GET api/group/dailyTarget
+// @desc    Get one daily target for certain group
+// @access  Public
+router.get('/group/dailyTarget', (req, res) => {
+	logger.info("GET api/group/dailyTarget");
+
+	const { groupName, dailyTargetNum } = req.query;
+
+	GroupModel.findOne({ groupName: groupName })
+		.then(group => {
+			if (!group) {
+				logger.error(`Group ${groupName} not found`);
+				return res.json(400).json(`Group ${groupName} not found`);
+			}
+
+			// latest target will be the last one added
+			const latestDailyTarget = group.dailyTargets[group.dailyTargets.length - 1];
+			if (!latestDailyTarget) {
+				logger.error(`No daily targets for group ${groupName}`);
+				return res.json(400).json(`No daily targets for group ${groupName}`);
+			}
+
+			if (dailyTargetNum > latestDailyTarget.listOfTargets.length) {
+				res.json(constructChatFuelNoMoreDailyTargets());
+			}
+			else{
+				res.json(constructChatFuelDailyTarget(latestDailyTarget.listOfTargets[dailyTargetNum - 1]));
+			}
+		})
+});
+
+// @route   POST api/group/dailyTarget
+// @desc    Update daily target evaluation
+// @access  Public
+router.post('/group/dailyTarget', (req, res) => {
+	logger.info("POST api/group/dailyTarget");
+
+	// Take all parameters from POST body
+	const { groupName, dailyTargetNum, dailyTargetEvaluation } = req.body;
+	const messengerId = req.body['messenger user id'];
+
+	GroupModel.findOne({ groupName: groupName })
+		.then(group => {
+			if (!group) {
+				logger.error(`Group ${groupName} not found`);
+				return res.json(400).json(`Group ${groupName} not found`);
+			}
+
+			// Find the student
+			let existingStudent;
+			group.students.forEach(student => {
+				if (student.messengerId === messengerId) {
+					existingStudent = student;
+					return;
+				}
+			})
+			if (!existingStudent) {
+				logger.error(`Student ${messengerId} not found`);
+				return res.json(400).json(`Student ${messengerId} not found`);
+			}
+
+			// Find latest daily update and take it's date in simplified format
+			const latestDailyTarget = group.dailyTargets[group.dailyTargets.length - 1];
+			const simplifiedDate = moment(latestDailyTarget.date).format('YYYY-MM-DD');
+
+			// Check all student daily updates and check if there is one for date when latest daily target was saved (simplifiedDate)
+			let existingDailyTartgetUpdate;
+			existingStudent.dailyTargetUpdates.forEach(dailyTargetUpdate => {
+				if (dailyTargetUpdate.date === simplifiedDate) {
+					existingDailyTartgetUpdate = dailyTargetUpdate;
+					return;
+				}
+			});
+
+			// Create new daily target update item with target itself and it's rating 
+			const newDailyTargetUpdateItem = new DailyTargetUpdateItemModel({
+				target: latestDailyTarget.listOfTargets[dailyTargetNum - 1],
+				rating: dailyTargetEvaluation
+			});
+
+			if (!existingDailyTartgetUpdate) {
+				// this is the first daily target that day, so we want to create new daily target object and append to all daily targets
+				const newDailyTargetUpdate = new DailyTargetUpdateModel({
+					date: simplifiedDate,
+					targetUpdates: [newDailyTargetUpdateItem]
+				});
+
+				existingStudent.dailyTargetUpdates.push(newDailyTargetUpdate);
+			}
+			else{
+				// if daily target update object already exists, simply another target evaluation rating to it
+				existingDailyTartgetUpdate.targetUpdates.push(newDailyTargetUpdateItem);
+			}
+
+			// save all changes
+			group.save(err => {
+				if (err) {
+					logger.error(`Failed to update daily target for student ${messengerId} in group ${groupName}`);
+					logger.error(err);
+					return res.status(500).json(err);
+				}
+				res.json(existingStudent);
+			});
+
+		})
 });
 
 
@@ -134,6 +244,20 @@ const constructChatFuelGroupNames = groups => {
 	}
 
 	return chatFuelMessage;
+}
+
+const constructChatFuelDailyTarget = dailyTarget => {
+	return {
+		messages: [
+			{text: `In scale (1-10) how well did you learn this topic - ${dailyTarget}?`}
+		]
+	 };
+}
+
+const constructChatFuelNoMoreDailyTargets = () => {
+	return {
+		redirect_to_blocks: ["Daily Target Finish"]
+	 };
 }
 
 module.exports = router;

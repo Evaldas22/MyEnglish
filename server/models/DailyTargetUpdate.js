@@ -1,12 +1,10 @@
 const mongoose = require('mongoose');
+const DailyTargetUpdateItemSchema = require('./DailyTargetUpdateItem').DailyTargetUpdateItemSchema;
 
 const DailyTargetUpdateSchema = new mongoose.Schema({
-    target: {
+    targetUpdates: [DailyTargetUpdateItemSchema],
+    date:{
         type: String,
-        required: true
-    },
-    rating: {
-        type: Number,
         required: true
     }
 });
