@@ -62,7 +62,7 @@ router.post('/student/newStudent', (req, res) => {
 // @desc    Add student day update
 // @access  Public
 router.post('/student/dayUpdate', (req, res) => {
-	logger.info(`POST api/student/dayUpdate for ${messengerId}[${groupName}]`);
+	logger.info('POST api/student/dayUpdate');
 
 	// Get all the parameters from POST body
 	const messengerId = req.body['messenger user id'];
