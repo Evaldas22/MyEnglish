@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const getStudent = require('./students').getStudent;
-const getGroup = require('./students').getGroup;
 const getNewWords = require('./students').getNewWords;
 const getWordsArrayFromString = require('./students').getWordsArrayFromString;
 var _ = require('lodash');
@@ -12,17 +11,17 @@ const logger = require('../../logging/logger');
 
 var GroupModel = require('../../models/Group').GroupModel;
 
-// @route   GET api/word/{messengerId}
+// @route   GET api/word/{messengerId}{groupName}
 // @desc    Get one word for revision
 // @access  Public
 router.get('/word', (req, res) => {
 	const query = url.parse(req.url, true).query;
 	const messengerId = query['messenger user id'];
+	const groupName = query['groupName'];
 	logger.info(`GET api/word for  ${messengerId}`);
 	
-	GroupModel.find()
-		.then(groups => {
-			const student = getStudent(groups, messengerId);
+	GroupModel.findOne({ groupName: groupName }).then(group => {
+			const student = getStudent(group, messengerId);
 		
 			if (!student) {
 				logger.error(`student with ${messengerId} not found`);
@@ -54,10 +53,8 @@ router.post('/word/update', (req, res) => {
 
 	logger.info(`POST api/word/update for ${messengerId}[${groupName}] word - ${word}`);
 
-	GroupModel.find()
-		.then(groups => {
+	GroupModel.findOne({ groupName: groupName }).then(group => {
 
-			const group = getGroup(groups, groupName);
 			if (_.isUndefined(group)) {
 				logger.error(`group - ${group} does not exist`);
 				return res.status(404).json('Group not found');
@@ -101,10 +98,8 @@ router.post('/word/newWords', (req, res) => {
 
 	logger.info(`POST api/word/newWords for ${messengerId}[${groupName}]`);
 
-	GroupModel.find()
-		.then(groups => {
+	GroupModel.findOne({ groupName: groupName }).then(group => {
 
-			const group = getGroup(groups, groupName);
 			if (_.isUndefined(group)) {
 				logger.error(`group ${groupName} doesn not exist`);
 				return res.status(404).json('Group not found');
