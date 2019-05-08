@@ -8,11 +8,11 @@ var DayUpdateModel = require('../../models/DayUpdate').DayUpdateModel;
 var WordModel = require('../../models/Word').WordModel;
 var _ = require('lodash');
 
-// @route   POST api/newStudent
+// @route   POST api/student/newStudent
 // @desc    Create new student
 // @access  Public
-router.post('/newStudent', (req, res) => {
-	logger.info('POST /api/newStudent');
+router.post('/student/newStudent', (req, res) => {
+	logger.info('POST /api/student/newStudent');
 
 	// Get all the parameters from POST body
 	const messengerId = req.body['messenger user id'];
@@ -58,75 +58,44 @@ router.post('/newStudent', (req, res) => {
 	})
 });
 
-// @route   POST api/student
+// @route   POST api/student/dayUpdate
 // @desc    Add student day update
 // @access  Public
-router.post('/student', (req, res) => {
-	const messengerId = req.body['messenger user id'];
-	const groupName = req.body.groupName;
-	const newWords = req.body.newWords;
+router.post('/student/dayUpdate', (req, res) => {
+	logger.info(`POST api/student/dayUpdate for ${messengerId}[${groupName}]`);
 
-	logger.info(`POST api/student for ${messengerId}[${groupName}]`);
+	// Get all the parameters from POST body
+	const messengerId = req.body['messenger user id'];
+	const { lessonRating, newWords, groupName, lessonRatingExplanation } = req.body;
 
 	GroupModel.findOne({ groupName: groupName }).then(group => {
-		// if this is new group
-		if (_.isUndefined(group)) {
-			logger.info(`Creating new group -  ${groupName}`);
-
-			const newStudent = constructNewStudent(req.body);
-			const newGroup = new GroupModel({
-				groupName: groupName,
-				students: [newStudent]
-			});
-
-			GroupModel.create(newGroup)
-				.then(saveGroupData => {
-					logger.info(`Group ${groupName} created`);
-					res.json(saveGroupData)
-				})
-				.catch(err => {
-					logger.error(`Failed to create group ${groupName}`);
-					logger.error(err);
-					res.status(500).json(err)
-				});
+		if (!group) {
+			logger.error(`Group ${groupName} not found`);
+			return res.json(400).json(`Group ${groupName} not found`);
 		}
-		else {
-			const student = getStudent(group, messengerId);
 
-			// if this is new student
-			if (_.isUndefined(student)) {
-				logger.info(`Creating new student ${messengerId}`);
-
-				const newStudent = constructNewStudent(req.body);
-				group.students.push(newStudent);
-
-				group.save(err => {
-					if (err) {
-						logger.error(`Failed to save group ${groupName} with student ${messengerId}`);
-						logger.error(err);
-						return res.status(500).json(err);
-					}
-					res.json(newStudent);
-				});
-			}
-			else {
-				// Need to update knownWords and dayUpdates
-				const newDayUpdate = constructDayUpdate(req.body);
-				const newWordsToBeAdded = getNewWords(student.knownWords, getWordsArrayFromString(newWords));
-
-				student.dayUpdates.push(newDayUpdate);
-				student.knownWords.push.apply(student.knownWords, newWordsToBeAdded);
-
-				group.save(err => {
-					if (err) {
-						logger.error(`Failed to save group ${groupName} with student ${messengerId}`);
-						logger.error(err);
-						return res.status(500).json(err);
-					}
-					res.json(student);
-				});
-			}
+		// check if that student exists
+		const existingStudent = getStudent(group, messengerId);
+		if (!existingStudent) {
+			logger.error(`Student ${messengerId} does not exist`);
+			return res.json(400).json(`Student ${messengerId} does not exist`);
 		}
+
+		// Update knownWords and dayUpdates
+		const newDayUpdate = constructDayUpdate(newWords, lessonRating, lessonRatingExplanation);
+		const newWordsToBeAdded = getNewWords(existingStudent.knownWords, getWordsArrayFromString(newWords));
+
+		existingStudent.dayUpdates.push(newDayUpdate);
+		existingStudent.knownWords.push.apply(existingStudent.knownWords, newWordsToBeAdded);
+
+		group.save(err => {
+			if (err) {
+				logger.error(`Failed to save group ${groupName} with student ${messengerId}`);
+				logger.error(err);
+				return res.status(500).json(err);
+			}
+			res.json(existingStudent);
+		});
 	})
 });
 
@@ -147,25 +116,13 @@ const getNewWords = (knownWords, newWordsArr) => {
 	return newWordsToBeAdded;
 }
 
-const constructNewStudent = body => {
-	return new StudentModel({
-		messengerId: body["messenger user id"],
-		name: body["first name"] + " " + body["last name"],
-		englishLevel: body.englishLevel,
-		groupName: body.groupName,
-		knownWords: constructKnownWords(getWordsArrayFromString(body.newWords)),
-		dayUpdates: [constructDayUpdate(body)]
-	});
-}
-
-const constructDayUpdate = body => {
-	const newWordsArray = getWordsArrayFromString(body.newWords);
+const constructDayUpdate = (newWords, lessonRating, lessonRatingExplanation) => {
+	const newWordsArray = getWordsArrayFromString(newWords);
 	const newUniqueWords = [...new Set(newWordsArray)];
 
 	return new DayUpdateModel({
-		learnedToday: getLearnedToday(body.learnedToday, body.learnedTodayExtended),
-		lessonRating: body.lessonRating || 0,
-		lessonRatingExplanation: body.lessonRatingExplanation || "",
+		lessonRating: lessonRating || 0,
+		lessonRatingExplanation: lessonRatingExplanation || "",
 		newWords: newUniqueWords
 	});
 }
@@ -188,10 +145,6 @@ const getStudent = (group, messengerId) => {
 		}
 	})
 	return existingStudent;
-}
-
-const getLearnedToday = (learnedToday, extension) => {
-	return learnedToday + (extension ? (". " + extension) : "")
 }
 
 const getWordsArrayFromString = (wordsString) => {
