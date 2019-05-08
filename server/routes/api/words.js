@@ -60,7 +60,7 @@ router.post('/word/update', (req, res) => {
 				return res.status(404).json('Group not found');
 			}
 
-			const student = getStudent(groups, messengerId);
+			const student = getStudent(group, messengerId);
 
 			if (_.isUndefined(student)) {
 				logger.error(`student - ${messengerId} does not exist`);
@@ -105,7 +105,7 @@ router.post('/word/newWords', (req, res) => {
 				return res.status(404).json('Group not found');
 			}
 
-			const student = getStudent(groups, messengerId);
+			const student = getStudent(group, messengerId);
 			if (_.isUndefined(student)) {
 				logger.error(`student ${messengerId} doesn not exist`);
 				return res.status(404).json('Student not found');
