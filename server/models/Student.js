@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const WordSchema = require('./Word').WordSchema;
 const DayUpdateSchema = require('./DayUpdate').DayUpdateSchema;
 const DailyTargetUpdateSchema = require('./DailyTargetUpdate').DailyTargetUpdateSchema;
+const RevisionSchema = require('./Revision').RevisionSchema;
 
 const StudentSchema = new mongoose.Schema({
     messengerId: {
@@ -22,7 +23,8 @@ const StudentSchema = new mongoose.Schema({
     },
     knownWords: [WordSchema],
     dayUpdates: [DayUpdateSchema],
-    dailyTargetUpdates: [DailyTargetUpdateSchema]
+    dailyTargetUpdates: [DailyTargetUpdateSchema],
+    revisions:[RevisionSchema]
 });
 
 const StudentModel = mongoose.model("students", StudentSchema);
