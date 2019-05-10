@@ -9,7 +9,7 @@ const passport = require('passport');
 
 var studentsRouter = require('./server/routes/api/students').router;
 var groupsRouter = require('./server/routes/api/groups');
-var wordsRouter = require('./server/routes/api/words');
+var wordsRouter = require('./server/routes/api/words').router;
 var teachersRouter = require('./server/routes/api/teachers');
 
 let sapaiToken = "";
@@ -17,7 +17,7 @@ let sapaiToken = "";
 const SAPCAI_REQUEST_TOKEN = process.env.sapaiToken || sapaiToken;
 
 var localConnectionString = "";
-// localConnectionString = require('./config/connectionString').mongoURI;
+// localConnectionString = require('./server/config/connectionString').mongoURI;
 var connectionString = process.env.connectionString || localConnectionString;
 
 // Set up the express app

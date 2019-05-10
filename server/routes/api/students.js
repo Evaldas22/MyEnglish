@@ -1,12 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const logger = require('../../logging/logger');
+const _ = require('lodash');
 
 var GroupModel = require('../../models/Group').GroupModel;
 var StudentModel = require('../../models/Student').StudentModel;
 var DayUpdateModel = require('../../models/DayUpdate').DayUpdateModel;
 var WordModel = require('../../models/Word').WordModel;
-var _ = require('lodash');
+
+// import functions 
+const getWordsWithTranslationArrayFromString = require('./words').getWordsWithTranslationArrayFromString;
+const getWordOrTranslation = require('./words').getWordOrTranslation;
+const getNewWordsWithTranslation = require('./words').getNewWordsWithTranslation;
 
 // @route   POST api/student/newStudent
 // @desc    Create new student
@@ -83,7 +88,8 @@ router.post('/student/dayUpdate', (req, res) => {
 
 		// Update knownWords and dayUpdates
 		const newDayUpdate = constructDayUpdate(newWords, lessonRating, lessonRatingExplanation);
-		const newWordsToBeAdded = getNewWords(existingStudent.knownWords, getWordsArrayFromString(newWords));
+		const newWordsToBeAdded = getNewWordsWithTranslation(existingStudent.knownWords, getWordsWithTranslationArrayFromString(newWords));
+		// const newWordsToBeAdded = getNewWords(existingStudent.knownWords, getWordsArrayFromString(newWords));
 
 		existingStudent.dayUpdates.push(newDayUpdate);
 		existingStudent.knownWords.push.apply(existingStudent.knownWords, newWordsToBeAdded);
@@ -117,7 +123,8 @@ const getNewWords = (knownWords, newWordsArr) => {
 }
 
 const constructDayUpdate = (newWords, lessonRating, lessonRatingExplanation) => {
-	const newWordsArray = getWordsArrayFromString(newWords);
+	const wordsWithTranslations = getWordsWithTranslationArrayFromString(newWords);
+	const newWordsArray = getWordsArrayFromString(wordsWithTranslations);
 	const newUniqueWords = [...new Set(newWordsArray)];
 
 	return new DayUpdateModel({
@@ -138,8 +145,10 @@ const getStudent = (group, messengerId) => {
 	return existingStudent;
 }
 
-const getWordsArrayFromString = (wordsString) => {
-	return wordsString.split(/[\s,]+/);
+const getWordsArrayFromString = (wordsWithTranslations) => {
+	return wordsWithTranslations.map(wordWithTranslation => {
+		return getWordOrTranslation(wordWithTranslation, true);
+	});
 }
 
 exports.router = router;
