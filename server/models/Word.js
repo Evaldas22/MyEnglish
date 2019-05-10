@@ -10,6 +10,10 @@ const WordSchema = new mongoose.Schema({
     score: {
         type: Number,
         required: true
+    },
+    translation: {
+        type: String,
+        default: ''
     }
 });
 
