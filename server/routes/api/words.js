@@ -1,26 +1,34 @@
 const express = require('express');
 const router = express.Router();
-const getStudent = require('./students').getStudent;
-var _ = require('lodash');
-var unirest = require('unirest');
-var apiKey = process.env.apiKey;
+const _ = require('lodash');
+const unirest = require('unirest');
+const apiKey = process.env.apiKey;
 const url = require('url');
 const logger = require('../../logging/logger');
 
-var GroupModel = require('../../models/Group').GroupModel;
+// import required models
+const GroupModel = require('../../models/Group').GroupModel;
 const WordModel = require('../../models/Word').WordModel;
+const RevisionModel = require('../../models/Revision').RevisionModel;
 
-// @route   GET api/word/{messengerId}{groupName}
+// @route   GET api/word/
 // @desc    Get one word for revision
 // @access  Public
 router.get('/word', (req, res) => {
+	// Get all query parameters
 	const query = url.parse(req.url, true).query;
 	const messengerId = query['messenger user id'];
-	const groupName = query['groupName'];
+	const { groupName, startingRevision } = query;
+
 	logger.info(`GET api/word for  ${messengerId}`);
 
 	GroupModel.findOne({ groupName: groupName }).then(group => {
-		const student = getStudent(group, messengerId);
+		if (!group) {
+			logger.error(`Group ${groupName} not found`);
+			return res.json(400).json(`Group ${groupName} not found`);
+		}
+
+		let student = getStudent(group, messengerId);
 
 		if (!student) {
 			logger.error(`student with ${messengerId} not found`);
@@ -31,11 +39,31 @@ router.get('/word', (req, res) => {
 			return res.status(404).json("Student doesn't know any words");
 		}
 
-		const wordForRevision = getWordForRevision(student.knownWords);
+		let wordAndTranslationForRevision;
 
-		const response = constructResponse(wordForRevision);
+		if (startingRevision === 'true') {
+			// if we're starting new revision we need to also create new revision object
+			const newRevision = new RevisionModel({
+				wordsUnderRevision: []
+			});
 
-		res.json(response);
+			wordAndTranslationForRevision = getWordWithTranslationForRevision(student.knownWords);
+			student = increaseWordFrequency(student, wordAndTranslationForRevision._id);
+			student.revisions.push(newRevision);
+		}
+		else{
+			wordAndTranslationForRevision = getWordWithTranslationForRevision(student.knownWords);
+			student = increaseWordFrequency(student, wordAndTranslationForRevision._id);
+		}
+
+		group.save(err => {
+			if (err) {
+				logger.error(`Error saving student(${messengerId}[${groupName}]) data`);
+				logger.error(err);
+				return res.status(500).json(err);
+			}
+			res.json(constructResponse(wordAndTranslationForRevision));
+		});
 	})
 });
 
@@ -165,31 +193,35 @@ router.post('/word/newWords', (req, res) => {
 
 // This function should take a word with lowest score or if there are multiple such words
 // with lowest score, then pick random word from those with lowest score
-const getWordForRevision = words => {
+const getWordWithTranslationForRevision = words => {
 	let smallestScoreWordObj = {};
 
 	// get the smallest score word
+	// score = score + frequency
 	words.forEach(word => {
-		if (_.isEmpty(smallestScoreWordObj) || (word.score < smallestScoreWordObj.score)) {
+		if (_.isEmpty(smallestScoreWordObj)
+			|| ((word.score + word.frequency) < (smallestScoreWordObj.score + smallestScoreWordObj.frequency))) {
 			smallestScoreWordObj = word;
 		}
 	});
-	// after we got smallest score word, we need to check if we have more words with this score
-	const wordsWithSmallestScore = getAllWordsWithSmallestScore(words, smallestScoreWordObj.score);
 
-	if (wordsWithSmallestScore.length > 1) {
-		return getRandomWord(wordsWithSmallestScore);
+	// after we got smallest score word, we need to check if we have more words with this score
+	const totalScore = smallestScoreWordObj.score + smallestScoreWordObj.frequency;
+	const wordsWithSmallestTotalScore = getAllWordsWithSmallestScore(words, totalScore);
+
+	if (wordsWithSmallestTotalScore.length > 1) {
+		return getRandomWord(wordsWithSmallestTotalScore);
 	}
 	else {
-		return wordsWithSmallestScore[0];
+		return wordsWithSmallestTotalScore[0];
 	}
 }
 
-const getAllWordsWithSmallestScore = (words, score) => {
+const getAllWordsWithSmallestScore = (words, totalScore) => {
 	let wordsWithSameScore = [];
 	words.forEach(word => {
-		if (word.score === score) {
-			wordsWithSameScore.push(word.word);
+		if ((word.score + word.frequency) === totalScore) {
+			wordsWithSameScore.push(word);
 		}
 	});
 
@@ -201,13 +233,18 @@ function getRandomWord(words) {
 	return words[randomNum];
 }
 
-const constructResponse = word => {
+const constructResponse = wordWithTranslation => {
+	// choose randomly if ask for lithuanian or english word
+	const shouldAskEnglish = (Math.floor(Math.random() * 2) == 0);
+
 	return {
-		"set_attributes":
+		set_attributes:
 		{
-			"revisionWord": word
+			revisionWord: wordWithTranslation.word,
+			translation: wordWithTranslation.translation,
+			shouldAskEnglish
 		}
-	}
+	};
 }
 
 // TODO: possible remove
@@ -285,6 +322,7 @@ const getNewWordsWithTranslation = (knownWords, newWordsWithTranslationArr) => {
 				newWordsToBeAdded.push(new WordModel({
 					word: newWord,
 					score: 0,
+					frequency: 0,
 					translation: newWordTranslation
 				}));
 			}
@@ -298,6 +336,7 @@ const getNewWordsWithTranslation = (knownWords, newWordsWithTranslationArr) => {
 					newWordsToBeAdded.push(new WordModel({
 						word: newWord,
 						score: 0,
+						frequency: 0,
 						translation: translationFromAPI
 					}));
 				}
@@ -326,7 +365,31 @@ const alreadyExisitsInCollection = (collection, word) => {
 	return collection.filter(knownWord => (knownWord.word === word)).length > 0;
 }
 
+// move this function to this module, to avoid circular dependency
+const getStudent = (group, messengerId) => {
+	let existingStudent;
+	group.students.forEach(student => {
+		if (student.messengerId === messengerId) {
+			existingStudent = student;
+			return;
+		}
+	})
+	return existingStudent;
+}
+
+const increaseWordFrequency = (student, wordId) => {
+	student.knownWords.forEach(knownWord => {
+		if (knownWord._id === wordId) {
+			knownWord.frequency++;
+			return; 
+		}
+	})
+	console.log(student.knownWords);
+	return student;
+}
+
 exports.router = router;
 exports.getWordsWithTranslationArrayFromString = getWordsWithTranslationArrayFromString;
 exports.getWordOrTranslation = getWordOrTranslation;
 exports.getNewWordsWithTranslation = getNewWordsWithTranslation;
+exports.getStudent = getStudent;

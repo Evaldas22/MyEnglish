@@ -12,6 +12,7 @@ var WordModel = require('../../models/Word').WordModel;
 const getWordsWithTranslationArrayFromString = require('./words').getWordsWithTranslationArrayFromString;
 const getWordOrTranslation = require('./words').getWordOrTranslation;
 const getNewWordsWithTranslation = require('./words').getNewWordsWithTranslation;
+const getStudent = require('./words').getStudent;
 
 // @route   POST api/student/newStudent
 // @desc    Create new student
@@ -46,7 +47,8 @@ router.post('/student/newStudent', (req, res) => {
 			groupName: groupName,
 			knownWords: [],
 			dayUpdates: [],
-			dailyTargetUpdates: []
+			dailyTargetUpdates: [],
+			revisions: []
 		});
 
 		// add and save new student
@@ -105,22 +107,23 @@ router.post('/student/dayUpdate', (req, res) => {
 	})
 });
 
-const getNewWords = (knownWords, newWordsArr) => {
-	const newUniqueWords = [...new Set(newWordsArr)];
-	let newWordsToBeAdded = [];
+// const getNewWords = (knownWords, newWordsArr) => {
+// 	const newUniqueWords = [...new Set(newWordsArr)];
+// 	let newWordsToBeAdded = [];
 
-	newUniqueWords.forEach(newWord => {
-		// only add new word if it's not already in knowWords array
-		if (!knownWords.filter(knownWord => (knownWord.word === newWord)).length > 0) {
-			newWordsToBeAdded.push(new WordModel({
-				word: newWord,
-				score: 0
-			}));
-		}
-	})
+// 	newUniqueWords.forEach(newWord => {
+// 		// only add new word if it's not already in knowWords array
+// 		if (!knownWords.filter(knownWord => (knownWord.word === newWord)).length > 0) {
+// 			newWordsToBeAdded.push(new WordModel({
+// 				word: newWord,
+// 				score: 0,
+// 				frequency: 0
+// 			}));
+// 		}
+// 	})
 
-	return newWordsToBeAdded;
-}
+// 	return newWordsToBeAdded;
+// }
 
 const constructDayUpdate = (newWords, lessonRating, lessonRatingExplanation) => {
 	const wordsWithTranslations = getWordsWithTranslationArrayFromString(newWords);
@@ -134,24 +137,12 @@ const constructDayUpdate = (newWords, lessonRating, lessonRatingExplanation) => 
 	});
 }
 
-const getStudent = (group, messengerId) => {
-	let existingStudent;
-	group.students.forEach(student => {
-		if (student.messengerId === messengerId) {
-			existingStudent = student;
-			return;
-		}
-	})
-	return existingStudent;
-}
-
 const getWordsArrayFromString = (wordsWithTranslations) => {
 	return wordsWithTranslations.map(wordWithTranslation => {
 		return getWordOrTranslation(wordWithTranslation, true);
 	});
 }
 
-exports.router = router;
-exports.getStudent = getStudent;
-exports.getNewWords = getNewWords;
+// exports.getNewWords = getNewWords;
 exports.getWordsArrayFromString = getWordsArrayFromString;
+exports.router = router;
