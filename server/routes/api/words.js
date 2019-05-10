@@ -326,4 +326,7 @@ const alreadyExisitsInCollection = (collection, word) => {
 	return collection.filter(knownWord => (knownWord.word === word)).length > 0;
 }
 
-module.exports = router;
+exports.router = router;
+exports.getWordsWithTranslationArrayFromString = getWordsWithTranslationArrayFromString;
+exports.getWordOrTranslation = getWordOrTranslation;
+exports.getNewWordsWithTranslation = getNewWordsWithTranslation;
