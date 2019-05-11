@@ -90,20 +90,22 @@ router.post('/student/dayUpdate', (req, res) => {
 
 		// Update knownWords and dayUpdates
 		const newDayUpdate = constructDayUpdate(newWords, lessonRating, lessonRatingExplanation);
-		const newWordsToBeAdded = getNewWordsWithTranslation(existingStudent.knownWords, getWordsWithTranslationArrayFromString(newWords));
-		// const newWordsToBeAdded = getNewWords(existingStudent.knownWords, getWordsArrayFromString(newWords));
+		getNewWordsWithTranslation(existingStudent.knownWords, getWordsWithTranslationArrayFromString(newWords))
+			.then(newWordsToBeAdded => {
+				// const newWordsToBeAdded = getNewWords(existingStudent.knownWords, getWordsArrayFromString(newWords));
 
-		existingStudent.dayUpdates.push(newDayUpdate);
-		existingStudent.knownWords.push.apply(existingStudent.knownWords, newWordsToBeAdded);
+				existingStudent.dayUpdates.push(newDayUpdate);
+				existingStudent.knownWords.push.apply(existingStudent.knownWords, newWordsToBeAdded);
 
-		group.save(err => {
-			if (err) {
-				logger.error(`Failed to save group ${groupName} with student ${messengerId}`);
-				logger.error(err);
-				return res.status(500).json(err);
-			}
-			res.json(existingStudent);
-		});
+				group.save(err => {
+					if (err) {
+						logger.error(`Failed to save group ${groupName} with student ${messengerId}`);
+						logger.error(err);
+						return res.status(500).json(err);
+					}
+					res.json(existingStudent);
+				});
+			})
 	})
 });
 

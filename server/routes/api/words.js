@@ -3,8 +3,10 @@ const router = express.Router();
 const _ = require('lodash');
 const unirest = require('unirest');
 const apiKey = process.env.apiKey;
+// const apiKey = require('../../config/apiKey').apiKey;
 const url = require('url');
 const logger = require('../../logging/logger');
+const axios = require('axios');
 
 // import required models
 const GroupModel = require('../../models/Group').GroupModel;
@@ -129,7 +131,7 @@ router.post('/word/update', (req, res) => {
 				// send chat fuel formatted answer with score
 				res.json(constructRevisionSummary(latestRevision));
 			}
-			else{
+			else {
 				// simply send back student
 				res.json(student);
 			}
@@ -161,17 +163,20 @@ router.post('/word/newWords', (req, res) => {
 			return res.status(404).json('Student not found');
 		}
 
-		const newWordsToBeAdded = getNewWordsWithTranslation(student.knownWords, getWordsWithTranslationArrayFromString(newWords));
-		student.knownWords.push.apply(student.knownWords, newWordsToBeAdded);
+		getNewWordsWithTranslation(student.knownWords, getWordsWithTranslationArrayFromString(newWords))
+			.then(newWordsToBeAdded => {
+				console.log('NEW WORDS TO BE ADDDED: ', newWordsToBeAdded);
+				student.knownWords.push.apply(student.knownWords, newWordsToBeAdded);
 
-		group.save(err => {
-			if (err) {
-				logger.error(`Error saving student(${messengerId}[${groupName}]) data`);
-				logger.error(err);
-				return res.status(500).json(err);
-			}
-			res.json(student);
-		});
+				group.save(err => {
+					if (err) {
+						logger.error(`Error saving student(${messengerId}[${groupName}]) data`);
+						logger.error(err);
+						return res.status(500).json(err);
+					}
+					res.json(student);
+				});
+			})
 	})
 });
 
@@ -333,8 +338,9 @@ const getWordsWithTranslationArrayFromString = (wordsString) => {
 
 const getNewWordsWithTranslation = (knownWords, newWordsWithTranslationArr) => {
 	const newWordsToBeAdded = [];
+	let promises = []
 
-	newWordsWithTranslationArr.map(newWordWithTranslation => {
+	newWordsWithTranslationArr.forEach(newWordWithTranslation => {
 		const newWord = getWordOrTranslation(newWordWithTranslation, true);
 		const newWordTranslation = getWordOrTranslation(newWordWithTranslation, false);
 
@@ -352,22 +358,26 @@ const getNewWordsWithTranslation = (knownWords, newWordsWithTranslationArr) => {
 		}
 		else {
 			// check google translate API for it
-			const translationFromAPI = "TRANSLATION";
-
-			if (translationFromAPI) {
-				if (!alreadyExisitsInCollection(knownWords, newWord) && !alreadyExisitsInCollection(newWordsToBeAdded, newWord)) {
-					newWordsToBeAdded.push(new WordModel({
-						word: newWord,
-						score: 0,
-						frequency: 0,
-						translation: translationFromAPI
-					}));
-				}
-			}
+			promises.push(getTranslation(newWord)
+				.then(translationFromAPI => {
+					if (translationFromAPI) {
+						if (!alreadyExisitsInCollection(knownWords, newWord) && !alreadyExisitsInCollection(newWordsToBeAdded, newWord)) {
+							newWordsToBeAdded.push(new WordModel({
+								word: newWord,
+								score: 0,
+								frequency: 0,
+								translation: translationFromAPI
+							}));
+						}
+					}
+				}));
 		}
 	})
 
-	return newWordsToBeAdded;
+	return Promise.all(promises)
+		.then(() => {
+			return newWordsToBeAdded;
+		})
 }
 
 const getWordOrTranslation = (wordWithTranslation, returnWord) => {
@@ -428,7 +438,7 @@ const getReportMessages = wordsUnderRevision => {
 				text: `${translation} -> ${word}. Correct!`
 			}
 		}
-		else if(guess === translation){
+		else if (guess === translation) {
 			return {
 				text: `${word} -> ${translation}. Correct!`
 			}
@@ -439,6 +449,21 @@ const getReportMessages = wordsUnderRevision => {
 			}
 		}
 	})
+}
+
+function getTranslation(word) {
+	// The target language
+	const target = 'lt';
+
+	return axios
+		.get(`https://translation.googleapis.com/language/translate/v2?q=${word}&target=${target}&source=en&key=${apiKey}`)
+		.then(response => {
+			const translations = response.data.data.translations;
+			if (translations.length > 0) {
+				return translations[0].translatedText;
+			}
+			else return undefined;
+		});
 }
 
 exports.router = router;
