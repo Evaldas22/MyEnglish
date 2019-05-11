@@ -78,7 +78,7 @@ router.get('/word', (req, res) => {
 router.post('/word/update', (req, res) => {
 	// Collect all required parameters
 	const messengerId = req.body['messenger user id'];
-	const { groupName, revisionWord, translation, guess } = req.body;
+	const { groupName, revisionWord, translation, guess, shouldAskEnglish } = req.body;
 
 	logger.info(`POST api/word/update for ${messengerId}[${groupName}] word - ${revisionWord}`);
 
@@ -111,7 +111,8 @@ router.post('/word/update', (req, res) => {
 		latestRevision.wordsUnderRevision.push(new RevisionWordModel({
 			word: revisionWord.toLowerCase(),
 			translation: translation.toLowerCase(),
-			guess: guess.toLowerCase()
+			guess: guess.toLowerCase(),
+			shouldAskEnglish: shouldAskEnglish === "true"
 		}))
 		// then update revision score
 		if (guess.toLowerCase() === revisionWord.toLowerCase() || guess.toLowerCase() == translation.toLowerCase()) {
@@ -431,7 +432,7 @@ const constructRevisionSummary = revisionObj => {
 
 const getReportMessages = wordsUnderRevision => {
 	return wordsUnderRevision.map(wordUnderRevision => {
-		const { word, translation, guess } = wordUnderRevision
+		const { word, translation, guess, shouldAskEnglish } = wordUnderRevision
 		if (guess === word) {
 			return {
 				text: `${translation} -> ${word} ✅`
@@ -444,7 +445,9 @@ const getReportMessages = wordsUnderRevision => {
 		}
 		else {
 			return {
-				text: `${word} -> ${translation} ❌`
+				text: shouldAskEnglish ? 
+					`${translation} -> ${guess} ❌. Correct is ${word}` : 
+					`${word} -> ${guess} ❌. Correct is ${translation}`
 			}
 		}
 	})
