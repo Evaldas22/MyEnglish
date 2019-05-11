@@ -100,7 +100,7 @@ router.post('/word/update', (req, res) => {
 
 		// Update known word score
 		student.knownWords.forEach(knownWord => {
-			if (knownWord.word === revisionWord) {
+			if (knownWord.word.toLowerCase() === revisionWord.toLowerCase()) {
 				knownWord.score++;
 			}
 		});
@@ -109,12 +109,12 @@ router.post('/word/update', (req, res) => {
 		const latestRevision = student.revisions[student.revisions.length - 1];
 		// first add word to list
 		latestRevision.wordsUnderRevision.push(new RevisionWordModel({
-			word: revisionWord,
-			translation: translation,
-			guess: guess
+			word: revisionWord.toLowerCase(),
+			translation: translation.toLowerCase(),
+			guess: guess.toLowerCase()
 		}))
 		// then update revision score
-		if (guess === revisionWord || guess == translation) {
+		if (guess.toLowerCase() === revisionWord.toLowerCase() || guess.toLowerCase() == translation.toLowerCase()) {
 			latestRevision.score++;
 		}
 
@@ -348,10 +348,10 @@ const getNewWordsWithTranslation = (knownWords, newWordsWithTranslationArr) => {
 			// only add that new word if it doesn't already exist in DB and in new words array (we don't want duplicates)
 			if (!alreadyExisitsInCollection(knownWords, newWord) && !alreadyExisitsInCollection(newWordsToBeAdded, newWord)) {
 				newWordsToBeAdded.push(new WordModel({
-					word: newWord,
+					word: newWord.toLowerCase(),
 					score: 0,
 					frequency: 0,
-					translation: newWordTranslation
+					translation: newWordTranslation.toLowerCase()
 				}));
 			}
 		}
@@ -362,10 +362,10 @@ const getNewWordsWithTranslation = (knownWords, newWordsWithTranslationArr) => {
 					if (translationFromAPI) {
 						if (!alreadyExisitsInCollection(knownWords, newWord) && !alreadyExisitsInCollection(newWordsToBeAdded, newWord)) {
 							newWordsToBeAdded.push(new WordModel({
-								word: newWord,
+								word: newWord.toLowerCase(),
 								score: 0,
 								frequency: 0,
-								translation: translationFromAPI
+								translation: translationFromAPI.toLowerCase()
 							}));
 						}
 					}
@@ -383,10 +383,10 @@ const getWordOrTranslation = (wordWithTranslation, returnWord) => {
 	const pair = wordWithTranslation.split(/\s*-\s*/);
 
 	if (returnWord) {
-		return pair[0];
+		return pair[0].toLowerCase();
 	}
 	if (pair.length > 1) {
-		return pair[1];
+		return pair[1].toLowerCase();
 	}
 
 	return undefined;
