@@ -407,14 +407,13 @@ const increaseWordFrequency = (student, wordId) => {
 			return;
 		}
 	})
-	console.log(student.knownWords);
 	return student;
 }
 
 const constructRevisionSummary = revisionObj => {
 	const reportMessages = getReportMessages(revisionObj.wordsUnderRevision)
 	return {
-		messages: [reportMessages, {
+		messages: [...reportMessages, {
 			text: `Total score: ${revisionObj.score} out of ${REVISION_LIMIT}`
 		}],
 		redirect_to_blocks: ["Revision end"]
