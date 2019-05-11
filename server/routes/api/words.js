@@ -446,8 +446,8 @@ const getReportMessages = wordsUnderRevision => {
 		else {
 			return {
 				text: shouldAskEnglish ? 
-					`${translation} -> ${guess} ❌. Correct is ${word}` : 
-					`${word} -> ${guess} ❌. Correct is ${translation}`
+				`${word} -> ${guess} ❌. Correct is ${translation}` :
+				`${translation} -> ${guess} ❌. Correct is ${word}` 
 			}
 		}
 	})
