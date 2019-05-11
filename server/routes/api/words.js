@@ -10,6 +10,9 @@ const logger = require('../../logging/logger');
 const GroupModel = require('../../models/Group').GroupModel;
 const WordModel = require('../../models/Word').WordModel;
 const RevisionModel = require('../../models/Revision').RevisionModel;
+const RevisionWordModel = require('../../models/RevisionWord').RevisionWordModel;
+
+const REVISION_LIMIT = 5;
 
 // @route   GET api/word/
 // @desc    Get one word for revision
@@ -51,7 +54,7 @@ router.get('/word', (req, res) => {
 			student = increaseWordFrequency(student, wordAndTranslationForRevision._id);
 			student.revisions.push(newRevision);
 		}
-		else{
+		else {
 			wordAndTranslationForRevision = getWordWithTranslationForRevision(student.knownWords);
 			student = increaseWordFrequency(student, wordAndTranslationForRevision._id);
 		}
@@ -68,27 +71,22 @@ router.get('/word', (req, res) => {
 });
 
 // @route   POST api/word/update/{messengerId}{groupName}{word}{knowIt}
-// @desc    Update word score
+// @desc    Update word score and revision object
 // @access  Public
 router.post('/word/update', (req, res) => {
-	const query = url.parse(req.url, true).query;
-	const knowIt = query['knowIt'];
-
+	// Collect all required parameters
 	const messengerId = req.body['messenger user id'];
-	const groupName = req.body.groupName;
-	const word = req.body.revisionWord;
+	const { groupName, revisionWord, translation, guess } = req.body;
 
-	logger.info(`POST api/word/update for ${messengerId}[${groupName}] word - ${word}`);
+	logger.info(`POST api/word/update for ${messengerId}[${groupName}] word - ${revisionWord}`);
 
 	GroupModel.findOne({ groupName: groupName }).then(group => {
-
 		if (_.isUndefined(group)) {
 			logger.error(`group - ${group} does not exist`);
 			return res.status(404).json('Group not found');
 		}
 
 		const student = getStudent(group, messengerId);
-
 		if (_.isUndefined(student)) {
 			logger.error(`student - ${messengerId} does not exist`);
 			return res.status(500).json('Student not found');
@@ -98,19 +96,44 @@ router.post('/word/update', (req, res) => {
 			return res.status(404).json("Student doesn't know any words");
 		}
 
+		// Update known word score
 		student.knownWords.forEach(knownWord => {
-			if (knownWord.word === word) {
-				knownWord.score += (knowIt === "true") ? 1 : 0;
+			if (knownWord.word === revisionWord) {
+				knownWord.score++;
 			}
 		});
 
+		// Update revision object (should be last object in array)
+		const latestRevision = student.revisions[student.revisions.length - 1];
+		// first add word to list
+		latestRevision.wordsUnderRevision.push(new RevisionWordModel({
+			word: revisionWord,
+			translation: translation,
+			guess: guess
+		}))
+		// then update revision score
+		if (guess === revisionWord || guess == translation) {
+			latestRevision.score++;
+		}
+
+		// save changes and send a response
 		group.save(err => {
 			if (err) {
 				logger.error(`Error saving student(${messengerId}[${groupName}]) data`);
 				logger.error(err);
 				return res.status(500).json(err);
 			}
-			res.json(student);
+
+			// check if we reached the limit of revision words
+			if (latestRevision.wordsUnderRevision.length >= REVISION_LIMIT) {
+				// send chat fuel formatted answer with score
+				res.json(constructRevisionSummary(latestRevision));
+			}
+			else{
+				// simply send back student
+				res.json(student);
+			}
+
 		});
 	})
 });
@@ -381,11 +404,42 @@ const increaseWordFrequency = (student, wordId) => {
 	student.knownWords.forEach(knownWord => {
 		if (knownWord._id === wordId) {
 			knownWord.frequency++;
-			return; 
+			return;
 		}
 	})
 	console.log(student.knownWords);
 	return student;
+}
+
+const constructRevisionSummary = revisionObj => {
+	const reportMessages = getReportMessages(revisionObj.wordsUnderRevision)
+	return {
+		messages: [reportMessages, {
+			text: `Total score: ${revisionObj.score} out of ${REVISION_LIMIT}`
+		}],
+		redirect_to_blocks: ["Revision end"]
+	}
+}
+
+const getReportMessages = wordsUnderRevision => {
+	return wordsUnderRevision.map(wordUnderRevision => {
+		const { word, translation, guess } = wordUnderRevision
+		if (guess === word) {
+			return {
+				text: `${translation} -> ${word}. Correct!`
+			}
+		}
+		else if(guess === translation){
+			return {
+				text: `${word} -> ${translation}. Correct!`
+			}
+		}
+		else {
+			return {
+				text: `${word} -> ${translation}. Your guess '${guess}' was wrong!`
+			}
+		}
+	})
 }
 
 exports.router = router;
