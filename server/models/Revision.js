@@ -6,6 +6,10 @@ const RevisionSchema = new mongoose.Schema({
     createdAt: {
       type: Date,
       default: Date.now
+    },
+    score: {
+      type: Number,
+      default: 0
     }
 });
 
