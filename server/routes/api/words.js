@@ -434,17 +434,17 @@ const getReportMessages = wordsUnderRevision => {
 		const { word, translation, guess } = wordUnderRevision
 		if (guess === word) {
 			return {
-				text: `${translation} -> ${word}. Correct!`
+				text: `${translation} -> ${word} ✅`
 			}
 		}
 		else if (guess === translation) {
 			return {
-				text: `${word} -> ${translation}. Correct!`
+				text: `${word} -> ${translation} ✅`
 			}
 		}
 		else {
 			return {
-				text: `${word} -> ${translation}. Your guess '${guess}' was wrong!`
+				text: `${word} -> ${translation} ❌`
 			}
 		}
 	})
