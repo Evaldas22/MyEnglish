@@ -12,6 +12,10 @@ const RevisionWordSchema = new mongoose.Schema({
     guess: {
       type: String,
       required: true
+    },
+    shouldAskEnglish: {
+      type: Boolean,
+      required: true
     }
 });
 
