@@ -100,7 +100,7 @@ router.post('/word/update', (req, res) => {
 
 		// Update known word score
 		student.knownWords.forEach(knownWord => {
-			if (knownWord.word.toLowerCase() === revisionWord.toLowerCase()) {
+			if (knownWord.word.toLowerCase() === revisionWord.toLowerCase() && guess.toLowerCase() === revisionWord.toLowerCase()) {
 				knownWord.score++;
 			}
 		});
