@@ -165,7 +165,6 @@ router.post('/word/newWords', (req, res) => {
 
 		getNewWordsWithTranslation(student.knownWords, getWordsWithTranslationArrayFromString(newWords))
 			.then(newWordsToBeAdded => {
-				console.log('NEW WORDS TO BE ADDDED: ', newWordsToBeAdded);
 				student.knownWords.push.apply(student.knownWords, newWordsToBeAdded);
 
 				group.save(err => {
