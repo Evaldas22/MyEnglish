@@ -91,11 +91,12 @@ router.post('/student/dayUpdate', (req, res) => {
 		// Update knownWords and dayUpdates
 		const newDayUpdate = constructDayUpdate(newWords, lessonRating, lessonRatingExplanation);
 		getNewWordsWithTranslation(existingStudent.knownWords, getWordsWithTranslationArrayFromString(newWords))
-			.then(newWordsToBeAdded => {
+			.then(newWords => {
 				// const newWordsToBeAdded = getNewWords(existingStudent.knownWords, getWordsArrayFromString(newWords));
 
 				existingStudent.dayUpdates.push(newDayUpdate);
-				existingStudent.knownWords.push.apply(existingStudent.knownWords, newWordsToBeAdded);
+				// existingStudent.knownWords.push.apply(existingStudent.knownWords, newWords);
+				existingStudent.knownWords = newWords;
 
 				group.save(err => {
 					if (err) {

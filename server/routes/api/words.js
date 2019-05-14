@@ -14,6 +14,7 @@ const RevisionModel = require('../../models/Revision').RevisionModel;
 const RevisionWordModel = require('../../models/RevisionWord').RevisionWordModel;
 
 const REVISION_LIMIT = 5;
+const WORDS_LIMIT = 10;
 
 // @route   GET api/word/
 // @desc    Get one word for revision
@@ -164,8 +165,9 @@ router.post('/word/newWords', (req, res) => {
 		}
 
 		getNewWordsWithTranslation(student.knownWords, getWordsWithTranslationArrayFromString(newWords))
-			.then(newWordsToBeAdded => {
-				student.knownWords.push.apply(student.knownWords, newWordsToBeAdded);
+			.then(newWords => {
+				// student.knownWords.push.apply(student.knownWords, newWordsToBeAdded);
+				student.knownWords = newWords;
 
 				group.save(err => {
 					if (err) {
@@ -201,8 +203,6 @@ router.get('/word/leastKnownWords', (req, res) => {
 			return res.status(404).json('Student not found');
 		}
 
-		const wordsLimit = 10;
-
 		if (existingStudent.knownWords.length === 0) {
 			logger.info(`${messengerId} has no words!`);
 			return res.json({
@@ -212,8 +212,8 @@ router.get('/word/leastKnownWords', (req, res) => {
 				redirect_to_blocks: ["TodayILearnedStart"]
 			});
 		}
-		else if (existingStudent.knownWords.length <= wordsLimit) {
-			logger.info(`${messengerId} has less than ${wordsLimit} words!`);
+		else if (existingStudent.knownWords.length <= WORDS_LIMIT) {
+			logger.info(`${messengerId} has less than ${WORDS_LIMIT} words!`);
 			return res.json(constructChatFuelResponseForLeastKnownWords(existingStudent.knownWords))
 		}
 
@@ -221,7 +221,7 @@ router.get('/word/leastKnownWords', (req, res) => {
 			return (a.score + a.frequency) - (b.score + b.frequency);
 		})
 
-		const wordsToReturnexistingStudent = existingStudent.knownWords.split(0, wordsLimit);
+		const wordsToReturnexistingStudent = existingStudent.knownWords.split(0, WORDS_LIMIT);
 
 		res.json(constructChatFuelResponseForLeastKnownWords(wordsToReturnexistingStudent));
 	});
@@ -288,7 +288,6 @@ const getWordsWithTranslationArrayFromString = (wordsString) => {
 }
 
 const getNewWordsWithTranslation = (knownWords, newWordsWithTranslationArr) => {
-	const newWordsToBeAdded = [];
 	let promises = []
 
 	newWordsWithTranslationArr.forEach(newWordWithTranslation => {
@@ -297,9 +296,25 @@ const getNewWordsWithTranslation = (knownWords, newWordsWithTranslationArr) => {
 
 		// if we have translation 
 		if (!_.isUndefined(newWordTranslation)) {
-			// only add that new word if it doesn't already exist in DB and in new words array (we don't want duplicates)
-			if (!alreadyExisitsInCollection(knownWords, newWord) && !alreadyExisitsInCollection(newWordsToBeAdded, newWord)) {
-				newWordsToBeAdded.push(new WordModel({
+
+			let foundExistingWord = false;
+
+			// overwrite word if it exists in DB, else add as new word
+			knownWords = knownWords.map(knownWord => {
+				if (knownWord.word === newWord) {
+					foundExistingWord = true;
+
+					return new WordModel({
+						word: newWord.toLowerCase(),
+						translation: newWordTranslation.toLowerCase(),
+						score: 0,
+						frequency: 0
+					})
+				}
+				else return knownWord;
+			})
+			if (!foundExistingWord) {
+				knownWords.push(new WordModel({
 					word: newWord.toLowerCase(),
 					score: 0,
 					frequency: 0,
@@ -312,8 +327,26 @@ const getNewWordsWithTranslation = (knownWords, newWordsWithTranslationArr) => {
 			promises.push(getTranslation(newWord)
 				.then(translationFromAPI => {
 					if (translationFromAPI) {
-						if (!alreadyExisitsInCollection(knownWords, newWord) && !alreadyExisitsInCollection(newWordsToBeAdded, newWord)) {
-							newWordsToBeAdded.push(new WordModel({
+
+						let foundExistingWord = false;
+
+						// code duplication...
+						// overwrite word if it exists in DB, else add as new word
+						knownWords = knownWords.map(knownWord => {
+							if (knownWord.word === newWord) {
+								foundExistingWord = true;
+
+								return new WordModel({
+									word: newWord.toLowerCase(),
+									translation: translationFromAPI.toLowerCase(),
+									score: 0,
+									frequency: 0
+								})
+							}
+							else return knownWord;
+						})
+						if (!foundExistingWord) {
+							knownWords.push(new WordModel({
 								word: newWord.toLowerCase(),
 								score: 0,
 								frequency: 0,
@@ -327,7 +360,7 @@ const getNewWordsWithTranslation = (knownWords, newWordsWithTranslationArr) => {
 
 	return Promise.all(promises)
 		.then(() => {
-			return newWordsToBeAdded;
+			return knownWords;
 		})
 }
 
@@ -342,11 +375,6 @@ const getWordOrTranslation = (wordWithTranslation, returnWord) => {
 	}
 
 	return undefined;
-}
-
-// collection - it needs to be an array of our Word Models
-const alreadyExisitsInCollection = (collection, word) => {
-	return collection.filter(knownWord => (knownWord.word === word)).length > 0;
 }
 
 // move this function to this module, to avoid circular dependency
@@ -396,9 +424,9 @@ const getReportMessages = wordsUnderRevision => {
 		}
 		else {
 			return {
-				text: shouldAskEnglish ? 
-				`${word} -> ${guess} ❌. Correct is ${translation}` :
-				`${translation} -> ${guess} ❌. Correct is ${word}` 
+				text: shouldAskEnglish ?
+					`${word} -> ${guess} ❌. Correct is ${translation}` :
+					`${translation} -> ${guess} ❌. Correct is ${word}`
 			}
 		}
 	})
