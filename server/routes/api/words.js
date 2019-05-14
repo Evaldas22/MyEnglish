@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const _ = require('lodash');
-const unirest = require('unirest');
 const apiKey = process.env.apiKey;
 // const apiKey = require('../../config/apiKey').apiKey;
 const url = require('url');
