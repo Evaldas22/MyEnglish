@@ -180,45 +180,6 @@ router.post('/word/newWords', (req, res) => {
 	})
 });
 
-// TODO: maybe remove
-
-// // @route   GET api/word/definition/{word}
-// // @desc    Get a definition of a word
-// // @access  Public
-// router.get('/word/definition', (req, res) => {
-// 	const query = url.parse(req.url, true).query;
-// 	const word = query['revisionWord'];
-
-// 	logger.info(`GET api/word/definition for ${word}`);
-
-// 	unirest.get(`https://wordsapiv1.p.rapidapi.com/words/${word}/definitions`)
-// 		.header("X-RapidAPI-Host", "wordsapiv1.p.rapidapi.com")
-// 		.header("X-RapidAPI-Key", apiKey)
-// 		.end(function (result) {
-// 			res.json(constructDefinitionResponse(result.body));
-// 		});
-// });
-
-// TODO: maybe remove
-
-// // @route   GET api/word/example/{word}{numberOfWord}
-// // @desc    Get example/-s of word
-// // @access  Public
-// router.get('/word/example', (req, res) => {
-// 	const query = url.parse(req.url, true).query;
-// 	const word = query['revisionWord'];
-// 	const numberOfWord = query['numberOfWord']
-
-// 	logger.info(`GET api/word/example for ${word} number ${numberOfWord}`);
-
-// 	unirest.get(`https://wordsapiv1.p.rapidapi.com/words/${word}/examples`)
-// 		.header("X-RapidAPI-Host", "wordsapiv1.p.rapidapi.com")
-// 		.header("X-RapidAPI-Key", apiKey)
-// 		.end(function (result) {
-// 			res.json(constructExampleResponse(result.body, numberOfWord));
-// 		});
-// });
-
 // This function should take a word with lowest score or if there are multiple such words
 // with lowest score, then pick random word from those with lowest score
 const getWordWithTranslationForRevision = words => {
@@ -274,63 +235,6 @@ const constructResponse = wordWithTranslation => {
 		}
 	};
 }
-
-// TODO: possible remove
-
-// const constructDefinitionResponse = definitionsObj => {
-// 	if (_.isEmpty(definitionsObj.definitions)) {
-// 		return { "messages": [{ "text": "We couldn't find any definition for this word :/" }] };
-// 	}
-// 	else {
-// 		const differentDefinitionsObjs = [];
-
-// 		definitionsObj.definitions.forEach(definition => {
-// 			if (!partOfSpeechExists(differentDefinitionsObjs, definition.partOfSpeech)) {
-// 				differentDefinitionsObjs.push(definition);
-// 			}
-// 		});
-
-// 		const textMessages = differentDefinitionsObjs.map(definitionObj => {
-// 			if (_.isNull(definitionObj.partOfSpeech)) {
-// 				return {
-// 					"text": `${definitionsObj.word} - ${definitionObj.definition}`
-// 				}
-// 			}
-// 			else return {
-// 				"text": `${definitionsObj.word} (${definitionObj.partOfSpeech}) - ${definitionObj.definition}`
-// 			}
-// 		});
-
-// 		return { "messages": textMessages };
-// 	}
-// }
-
-// const constructExampleResponse = (exampleObj, exampleNumber) => {
-// 	if (_.isEmpty(exampleObj.examples)) {
-// 		return { "messages": [{ "text": "We couldn't find any examples for this word :/" }] };
-// 	}
-// 	else {
-// 		if (exampleNumber > exampleObj.examples.length) {
-// 			return { "messages": [{ "text": "Sorry, but I don't have any examples left..." }] }
-// 		}
-// 		else {
-// 			const example = exampleObj.examples[exampleNumber - 1];
-// 			return { "messages": [{ "text": example }] };
-// 		}
-// 	}
-// }
-
-// const partOfSpeechExists = (differentDefinitionsObjs, partOfSpeech) => {
-// 	let containsPartOfSpeech = false;
-
-// 	differentDefinitionsObjs.forEach(definitionObj => {
-// 		if (definitionObj.partOfSpeech === partOfSpeech) {
-// 			containsPartOfSpeech = true;
-// 		}
-// 	});
-
-// 	return containsPartOfSpeech;
-// }
 
 const getWordsWithTranslationArrayFromString = (wordsString) => {
 	return wordsString.split(/,\s*/);
