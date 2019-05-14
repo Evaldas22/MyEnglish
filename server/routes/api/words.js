@@ -287,6 +287,7 @@ const getWordsWithTranslationArrayFromString = (wordsString) => {
 	return wordsString.split(/,\s*/);
 }
 
+// TODO: this method should be improved. Looping each time through known words is not good.
 const getNewWordsWithTranslation = (knownWords, newWordsWithTranslationArr) => {
 	let promises = []
 
