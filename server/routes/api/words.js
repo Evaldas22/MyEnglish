@@ -421,10 +421,9 @@ const getTranslation = word => {
 
 const constructChatFuelResponseForLeastKnownWords = words => {
 	return {
-		messages: [ {text: "Here are 10 least known words from your words list:"},
-			...words.map(word => ({
+		messages: words.map(word => ({
 			text: `${word.word} - ${word.translation}`
-		}))],
+		})),
 		redirect_to_blocks: ["TodayILearnedStart"]
 	}
 }
