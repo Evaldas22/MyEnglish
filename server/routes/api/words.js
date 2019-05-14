@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const _ = require('lodash');
-const apiKey = process.env.apiKey;
-// const apiKey = require('../../config/apiKey').apiKey;
+// const apiKey = process.env.apiKey;
+const apiKey = require('../../config/apiKey').apiKey;
 const url = require('url');
 const logger = require('../../logging/logger');
 const axios = require('axios');
@@ -177,6 +177,52 @@ router.post('/word/newWords', (req, res) => {
 				});
 			})
 	})
+});
+
+// @route   GET api/leastKnownWords
+// @desc    Get list of words with lowest score (score + frequency)
+// @access  Public
+router.get('/word/leastKnownWords', (req, res) => {
+	logger.info('GET api/leastKnownWords');
+
+	const query = url.parse(req.url, true).query;
+	const messengerId = query['messenger user id'];
+	const { groupName } = query;
+
+	GroupModel.findOne({ groupName: groupName }).then(group => {
+		if (_.isUndefined(group)) {
+			logger.error(`group ${groupName} doesn not exist`);
+			return res.status(404).json('Group not found');
+		}
+
+		const existingStudent = getStudent(group, messengerId);
+		if (_.isUndefined(existingStudent)) {
+			logger.error(`student ${messengerId} doesn not exist`);
+			return res.status(404).json('Student not found');
+		}
+
+		const wordsLimit = 10;
+
+		if (existingStudent.knownWords.length === 0) {
+			return res.json({
+				messages: [{
+					text: "Sorry, you don't any words :/"
+				}],
+				redirect_to_blocks: ["TodayILearnedStart"]
+			});
+		}
+		else if (existingStudent.knownWords.length <= wordsLimit) {
+			return res.json(constructChatFuelResponseForLeastKnownWords(existingStudent.knownWords))
+		}
+
+		existingStudent.knownWords.sort((a, b) => {
+			return (a.score + a.frequency) - (b.score + b.frequency);
+		})
+
+		const wordsToReturnexistingStudent = existingStudent.knownWords.split(0, wordsLimit);
+
+		res.json(constructChatFuelResponseForLeastKnownWords(wordsToReturnexistingStudent));
+	});
 });
 
 // This function should take a word with lowest score or if there are multiple such words
@@ -356,7 +402,7 @@ const getReportMessages = wordsUnderRevision => {
 	})
 }
 
-function getTranslation(word) {
+const getTranslation = word => {
 	// The target language
 	const target = 'lt';
 
@@ -369,6 +415,16 @@ function getTranslation(word) {
 			}
 			else return undefined;
 		});
+}
+
+const constructChatFuelResponseForLeastKnownWords = words => {
+	return {
+		messages: [ {text: "Here are 10 least known words from your words list:"},
+			...words.map(word => ({
+			text: `${word.word} - ${word.translation}`
+		}))],
+		redirect_to_blocks: ["TodayILearnedStart"]
+	}
 }
 
 exports.router = router;
