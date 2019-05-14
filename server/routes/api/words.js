@@ -204,14 +204,16 @@ router.get('/word/leastKnownWords', (req, res) => {
 		const wordsLimit = 10;
 
 		if (existingStudent.knownWords.length === 0) {
+			logger.info(`${messengerId} has no words!`);
 			return res.json({
 				messages: [{
-					text: "Sorry, you don't any words :/"
+					text: "Sorry, you don't have any words :/"
 				}],
 				redirect_to_blocks: ["TodayILearnedStart"]
 			});
 		}
 		else if (existingStudent.knownWords.length <= wordsLimit) {
+			logger.info(`${messengerId} has less than ${wordsLimit} words!`);
 			return res.json(constructChatFuelResponseForLeastKnownWords(existingStudent.knownWords))
 		}
 
