@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const _ = require('lodash');
-// const apiKey = process.env.apiKey;
-const apiKey = require('../../config/apiKey').apiKey;
+const apiKey = process.env.apiKey;
+// const apiKey = require('../../config/apiKey').apiKey;
 const url = require('url');
 const logger = require('../../logging/logger');
 const axios = require('axios');
